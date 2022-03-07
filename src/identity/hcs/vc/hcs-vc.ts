@@ -3,16 +3,15 @@ import {
     Hbar,
     PrivateKey,
     Timestamp,
-    TopicId,
+    TopicId
 } from "@hashgraph/sdk";
-
-
-
 import { MessageEnvelope } from "../message-envelope";
 import { HcsVcMessage } from "./hcs-vc-message";
 
-export class HcsVc {
 
+
+
+export class HcsVc {
     public static TRANSACTION_FEE = new Hbar(2);
     public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
 

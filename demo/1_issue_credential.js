@@ -1,5 +1,5 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
-const { HcsVc } = require("../dist");
+const { HcsVc, Issuer } = require("../dist");
 const { OPERATOR_ID, OPERATOR_KEY, TOPIC_ID } = require("./.env.json");
 
 async function main() {
@@ -10,32 +10,37 @@ async function main() {
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
     const issuerPrivateKey = PrivateKey.generate();
-    const Issuer = new Issuer(privateKey: issuerPrivateKey, did: issuerDID, name: name );
- 
+    const issuer = new Issuer(issuerDID, "Test Issuer");
+
     /**
      *  Issue cred
-     * 
+     *
      */
-     const claims = {
-        "name": "Melbourne Uni",
-        "address": "Melbourne",
-        "code": "12345",
-        "course": {
-            "id": "122345",
-            "courseCode": "ws101",
-            "name": "WorkSafe Basic Training Module",
-            "version": "2021-01-01",
-            "provider": "WorkPro Training"
-        }
-    }
+    const claims = {
+        name: "Melbourne Uni",
+        address: "Melbourne",
+        code: "12345",
+        course: {
+            id: "122345",
+            courseCode: "ws101",
+            name: "WorkSafe Basic Training Module",
+            version: "2021-01-01",
+            provider: "WorkPro Training",
+        },
+    };
 
-    const vc = new HcsVc({ issuer: _issuer, subjectDID: subjectDID, client: client, type: "cert ", claims: claims, expiryDate: _date });
+    const vc = new HcsVc({
+        issuer: issuer,
+        subjectDID: subjectDID,
+        client: client,
+        type: "cert ",
+        claims: claims,
+        expiryDate: _date,
+    });
 
-   
-
-    // create cred - singed by issuer pk 
-    // create hash 
-    // create message 
+    // create cred - singed by issuer pk
+    // create hash
+    // create message
     //{
     //     "mode": "plain",
     //     "message": {
@@ -48,16 +53,14 @@ async function main() {
     // submit transaction
     // output : W3C Cred signed by issuer and subject as did -  "credentialHash": "7L6ZqXZzusWvMfzRCTrzjan2AgPFotQzfWqdzXwVNHkV"
 
-
     const registeredDid = await vc.issue();
 
     //get status - ACTIVE, REVOKE, SU.....
     const status = await vc.verifyStatus();
 
-
     // find out vc hash
     // create message
-    // create message 
+    // create message
     //{
     //     "mode": "plain",
     //     "message": {
