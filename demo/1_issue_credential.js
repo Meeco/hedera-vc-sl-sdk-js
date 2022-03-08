@@ -1,6 +1,6 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
-const { HcsVc, W3CCredential } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY, SUBJECT_DID, ISSUER_DID, ISSUER_PK } = require("./.env.json");
+const { HcsVc } = require("../dist");
+const { OPERATOR_ID, OPERATOR_KEY, SUBJECT_DID, ISSUER_DID, ISSUER_PK, TOPIC_ID } = require("./.env.json");
 
 async function main() {
     /**
@@ -9,13 +9,18 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK));
+    const hcsVc = new HcsVc(
+        ISSUER_DID,
+        PrivateKey.fromString(ISSUER_PK),
+        TOPIC_ID,
+        PrivateKey.fromString(OPERATOR_KEY),
+        client
+    );
 
     /**
      *  Issue cred
      *
      */
-    debugger;
     let vc = await hcsVc.issue({
         credentialSubject: {
             id: SUBJECT_DID,
@@ -83,6 +88,8 @@ async function main() {
 
     console.log("\n ======= VC ======== \n");
     console.log(vc);
+
+    console.log("hash" + vc.hash());
 }
 
 main();

@@ -6,6 +6,7 @@ const OPERATOR_KEY = process.env.OPERATOR_KEY;
 const ISSUER_DID = process.env.ISSUER_DID;
 const ISSUER_PK = process.env.ISSUER_PK;
 const SUBJECT_DID = process.env.SUBJECT_DID;
+const TOPIC_ID = process.env.TOPIC_ID;
 
 // testnet, previewnet, mainnet
 const NETWORK = "testnet";
@@ -23,7 +24,7 @@ describe("HcsVc", () => {
         client = Client.forTestnet();
         client.setMirrorNetwork(MIRROR_PROVIDER);
         client.setOperator(operatorId, operatorKey);
-        hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK));
+        hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK), TOPIC_ID, operatorKey, client);
     });
 
     describe("#issue", () => {

@@ -5,20 +5,14 @@ import * as vc from "did-jwt-vc";
 import { Issuer } from "did-jwt-vc";
 import * as u8a from "uint8arrays";
 import { W3CCredential } from "./w3c-credential";
+import { VcMethodOperation } from "../../ vc-method-operation";
+import { HcsVcTransaction } from "./hcs-vc-transaction";
 
 export type VCJWT = string;
 
 export class HcsVc {
     public static TRANSACTION_FEE = new Hbar(2);
     public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
-
-    protected client: Client;
-    protected identifier: string;
-    protected network: string;
-    protected topicId: TopicId;
-
-    protected messages: HcsVcMessage[];
-    protected resolvedAt: Timestamp;
 
     protected onMessageConfirmed: (message: MessageEnvelope<HcsVcMessage>) => void;
 
@@ -36,10 +30,18 @@ export class HcsVc {
      */
 
     protected _issuer: vc.Issuer;
+    protected _topicId: TopicId;
 
-    constructor(protected issuerDID: string, protected privateKey: PrivateKey) {
+    constructor(
+        protected issuerDID: string,
+        protected issuerPrivateKey: PrivateKey,
+        protected topicId: string,
+        protected accountPrivateKey: PrivateKey,
+        protected client: Client
+    ) {
         // signs with EdDSA/Ed2219
-        this._issuer = this.createSigner(this.privateKey, this.issuerDID);
+        this._issuer = this.createSigner(this.issuerPrivateKey, this.issuerDID);
+        this._topicId = TopicId.fromString(topicId);
     }
 
     get signer() {
@@ -56,22 +58,18 @@ export class HcsVc {
         contexts?: string[];
         evidence?: any;
         credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
-    }): Promise<W3CCredential<any>> {
-        return W3CCredential.create(args, this._issuer);
+    }) {
+        const credential = await W3CCredential.create(args, this._issuer);
+        const credentialHash = credential.hash();
+        this.submitTransaction(VcMethodOperation.ISSUE, credentialHash, this.issuerPrivateKey);
+        return credential;
     }
 
-    async submitVC(vcToBeSubmitted: VCJWT) {
-        const hashedVC = W3CCredential.fromJWT(vcToBeSubmitted).hash();
-
-        // submit transaciton
+    async revokeByHash(credentialHash: string) {
         throw new Error("Method not implemented");
     }
 
-    async revokeByHash(vcHash: string) {
-        throw new Error("Method not implemented");
-    }
-
-    async getStatus(vcHash: string) {
+    async getStatus(credentialHash: string) {
         throw new Error("Method not implemented");
     }
 
@@ -83,11 +81,40 @@ export class HcsVc {
      * @returns this
      */
     private async submitTransaction(
-        VcMethodOperation: any,
-        event: any,
-        privateKey: PrivateKey
-    ): Promise<MessageEnvelope<any>> {
-        throw new Error("Method not implemented.");
+        VcMethodOperation: VcMethodOperation,
+        credentialHash: string,
+        issuerPrivateKey: PrivateKey
+    ): Promise<MessageEnvelope<HcsVcMessage>> {
+        const message = new HcsVcMessage(VcMethodOperation, credentialHash);
+        const envelope = new MessageEnvelope(message);
+        const transaction = new HcsVcTransaction(envelope, this._topicId);
+
+        return new Promise((resolve, reject) => {
+            transaction
+                .signMessage((msg) => {
+                    return issuerPrivateKey.sign(msg);
+                })
+                .buildAndSignTransaction((tx) => {
+                    return tx
+                        .setMaxTransactionFee(HcsVc.TRANSACTION_FEE)
+                        .freezeWith(this.client)
+                        .sign(this.accountPrivateKey);
+                })
+                .onError((err) => {
+                    // console.error(err);
+                    reject(err);
+                })
+                .onMessageConfirmed((msg) => {
+                    if (this.onMessageConfirmed) {
+                        this.onMessageConfirmed(msg);
+                    }
+
+                    console.log("Message Published");
+                    console.log(`Explore on DragonGlass: https://testnet.dragonglass.me/hedera/topics/${this.topicId}`);
+                    resolve(msg);
+                })
+                .execute(this.client);
+        });
     }
 
     private createSigner(key: PrivateKey, did: string): Issuer {

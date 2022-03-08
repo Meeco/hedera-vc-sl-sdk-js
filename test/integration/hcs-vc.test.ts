@@ -10,6 +10,7 @@ const OPERATOR_KEY = process.env.OPERATOR_KEY;
 const TOPIC_ID = process.env.TOPIC_ID;
 const ISSUER_DID = process.env.ISSUER_DID;
 const ISSUER_PK = process.env.ISSUER_PK;
+const SUBJECT_DID = process.env.SUBJECT_DID;
 
 // testnet, previewnet, mainnet
 const NETWORK = "testnet";
@@ -27,33 +28,40 @@ describe("HcsVc", () => {
         client = Client.forTestnet();
         client.setMirrorNetwork(MIRROR_PROVIDER);
         client.setOperator(operatorId, operatorKey);
-        hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK));
+        hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK), TOPIC_ID, operatorKey, client);
     });
 
     describe("#issue", () => {
         it("creates new verifiable credential for issuer", async () => {
             // create VC
-            let vc = await hcsVc.issue({
-                credentialSchema: {
-                    id: "license",
-                    type: "JsonSchemaValidator2018",
-                },
+            const credential = await hcsVc.issue({
                 credentialSubject: {
-                    id: "did:of:license:owner:123",
-                    DriversLicence: {
-                        id: "urn:meeco:driverlicenceCredID",
-                        birthDate: "01/02/1980",
+                    id: SUBJECT_DID,
+                    givenName: "Jane",
+                    familyName: "Doe",
+                    degree: {
+                        type: "BachelorDegree",
+                        name: "Bachelor of Science and Arts",
+                        college: "College of Engineering",
                     },
                 },
-                expiration: new Date("2022-01-01T00:00:00Z"),
-                evidence: {
-                    id: "1234",
-                    validatedBy: "Jim",
+                credentialSchema: {
+                    id: "https://example.org/examples/degree.json",
+                    type: "JsonSchemaValidator2018",
                 },
+                expiration: new Date("2022-01-01T00:00:00Z"),
+                evidence: [
+                    {
+                        id: "https://example.edu/evidence/f2aeec97-fc0d-42bf-8ca7-0548192d4231",
+                        type: ["DocumentVerification"],
+                        verifier: "https://example.edu/issuers/14",
+                        evidenceDocument: "DriversLicense",
+                        subjectPresence: "Physical",
+                        documentPresence: "Physical",
+                        licenseNumber: "123AB4567",
+                    },
+                ],
             });
-
-            // create hash
-            // submit hash to hcs
         });
 
         it("register signed credential hash message to hcs", async () => {});
