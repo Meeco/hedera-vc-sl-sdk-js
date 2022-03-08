@@ -1,4 +1,3 @@
 /node_modules/
 /dist/
 /demo/.env.json
-jest.setup.js
