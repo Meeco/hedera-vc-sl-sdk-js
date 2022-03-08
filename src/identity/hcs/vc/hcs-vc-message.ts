@@ -9,22 +9,20 @@ export type Signer<T> = (message: T) => T;
  * The Vc document message submitted to appnet's Vc Topic.
  */
 export class HcsVcMessage {
-    private static serialVersionUID = Long.fromInt(1);
-
     protected timestamp: Timestamp;
     protected operation: VcMethodOperation;
-    protected vc: string;
+    protected credentialHash: string;
 
     /**
      * Creates a new instance of {@link HcsVcMessage}.
      *
      * @param operation         The operation on Vc document.
-     * @param vcHash               The vc Hash string.
+     * @param credentialHash    The credential Hash string.
      */
-    constructor(operation: VcMethodOperation, vc: string) {
+    constructor(operation: VcMethodOperation, credentialHash: string) {
         this.timestamp = TimestampUtils.now();
         this.operation = operation;
-        this.vc = vc;
+        this.credentialHash = credentialHash;
     }
 
     public getTimestamp(): Timestamp {
@@ -36,7 +34,7 @@ export class HcsVcMessage {
     }
 
     public getVcHash(): string {
-        return this.vc;
+        return this.credentialHash;
     }
 
     /**
@@ -50,7 +48,7 @@ export class HcsVcMessage {
     public isValid(...args: any[]): boolean {
         const VcTopicId: TopicId = args[0] || null;
 
-        if (this.vc == null || this.operation == null) {
+        if (this.credentialHash == null || this.operation == null) {
             return false;
         }
 
@@ -66,17 +64,17 @@ export class HcsVcMessage {
     public toJsonTree(): any {
         const result: any = { timestamp: TimestampUtils.toJSON(this.timestamp) };
         result.operation = this.operation;
-        result.vc = this.vc;
+        result.credentialHash = this.credentialHash;
 
         return result;
     }
 
     public static fromJsonTree(tree: any, result?: HcsVcMessage): HcsVcMessage {
         if (!result) {
-            result = new HcsVcMessage(tree.operation, tree.vc);
+            result = new HcsVcMessage(tree.operation, tree.credentialHash);
         } else {
             result.operation = tree.operation;
-            result.vc = tree.vc;
+            result.credentialHash = tree.credentialHash;
         }
         result.timestamp = TimestampUtils.fromJson(tree.timestamp);
         return result;

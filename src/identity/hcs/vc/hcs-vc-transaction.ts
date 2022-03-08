@@ -132,9 +132,7 @@ export class HcsVcTransaction {
         if (this.receiver) {
             this.listener = this.provideTopicListener(this.topicId);
             this.listener
-                .setStartTime(
-                    Timestamp.fromDate(moment().subtract(HcsVcTransaction.SUBTRACT_TIME, "seconds").toDate())
-                )
+                .setStartTime(Timestamp.fromDate(moment().subtract(HcsVcTransaction.SUBTRACT_TIME, "seconds").toDate()))
                 .setIgnoreErrors(false)
                 .addFilter((response) => {
                     return ArraysUtils.equals(messageContent, response.contents);

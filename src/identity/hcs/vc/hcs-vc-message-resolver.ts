@@ -6,9 +6,9 @@ import { HcsVcMessage } from "./hcs-vc-message";
 import { HcsVcTopicListener } from "./hcs-vc-topic-listener";
 
 /**
- * Resolves the Vc Events from Hedera network.
+ * Resolves the Vc Message from Hedera network.
  */
-export class HcsVcEventMessageResolver {
+export class HcsVcMessageResolver {
     /**
      * Default time to wait before finishing resolution and after the last message was received.
      */
@@ -34,7 +34,7 @@ export class HcsVcEventMessageResolver {
         this.topicId = topicId;
         this.listener = new HcsVcTopicListener(this.topicId, startTime);
 
-        this.noMoreMessagesTimeout = HcsVcEventMessageResolver.DEFAULT_TIMEOUT;
+        this.noMoreMessagesTimeout = HcsVcMessageResolver.DEFAULT_TIMEOUT;
         this.lastMessageArrivalTime = Long.fromInt(Date.now());
     }
 
@@ -117,7 +117,7 @@ export class HcsVcEventMessageResolver {
      * @param handler The results handler.
      * @return This resolver instance.
      */
-    public whenFinished(handler: (input: MessageEnvelope<HcsVcMessage>[]) => void): HcsVcEventMessageResolver {
+    public whenFinished(handler: (input: MessageEnvelope<HcsVcMessage>[]) => void): HcsVcMessageResolver {
         this.resultsHandler = handler;
         return this;
     }
@@ -128,7 +128,7 @@ export class HcsVcEventMessageResolver {
      * @param handler The error handler.
      * @return This resolver instance.
      */
-    public onError(handler: (input: Error) => void): HcsVcEventMessageResolver {
+    public onError(handler: (input: Error) => void): HcsVcMessageResolver {
         this.errorHandler = handler;
         return this;
     }
@@ -140,7 +140,7 @@ export class HcsVcEventMessageResolver {
      * @param timeout The timeout in milliseconds to wait for new messages from the topic.
      * @return This resolver instance.
      */
-    public setTimeout(timeout: Long | number): HcsVcEventMessageResolver {
+    public setTimeout(timeout: Long | number): HcsVcMessageResolver {
         this.noMoreMessagesTimeout = Long.fromValue(timeout);
         return this;
     }
