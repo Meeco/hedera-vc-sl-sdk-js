@@ -7,11 +7,11 @@ import { HcsVcMessageResolver } from "./identity/hcs/vc/hcs-vc-message-resolver"
 import { HcsVcMessage } from "./identity/hcs/vc/hcs-vc-message";
 import { HcsVcTopicListener } from "./identity/hcs/vc/hcs-vc-topic-listener";
 import { HcsVcTransaction } from "./identity/hcs/vc/hcs-vc-transaction";
-import { Issuer } from "./identity/hcs/vc/issuer";
 import { VCError, VCErrorCode } from "./identity/vc-error";
 import { ArraysUtils } from "./utils/arrays-utils";
 import { TimestampUtils } from "./utils/timestamp-utils";
 import { Validator } from "./utils/validator";
+import { W3CCredential } from "./identity/hcs/vc/w3c-credential";
 
 export {
     ArraysUtils,
@@ -20,7 +20,6 @@ export {
     HcsVcMessage,
     HcsVcTopicListener,
     HcsVcTransaction,
-    Issuer,
     JsonClass,
     MessageEnvelope,
     SerializableMirrorConsensusResponse,
@@ -29,4 +28,5 @@ export {
     VCError,
     VCErrorCode,
     VcMethodOperation,
+    W3CCredential,
 };

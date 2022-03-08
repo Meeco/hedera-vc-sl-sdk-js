@@ -1,3 +1,8 @@
-// process.env.OPERATOR_ID = "0.0.xxxxxx";
-// process.env.OPERATOR_KEY =
-//     "302e02...";
+process.env.OPERATOR_ID = "0.0.12710106";
+process.env.OPERATOR_KEY =
+    "302e020100300506032b657004220420bc45334a1313725653d3513fcc67edb15f76985f537ca567e2177b0be9906d49";
+process.env.TOPIC_ID = "0.0.30885635";
+process.env.ISSUER_DID = "did:hedera:testnet:z6MkfViTz7XtRqFBNKzPwwLNCnQLbwb3t93cSnfyyDVrTZF4_0.0.30886078";
+process.env.ISSUER_PK =
+    "302e020100300506032b657004220420afbcba49d52355632eef1c50faf16f21f90ef5b80588256493f93dc2d367a4f7";
+process.env.SUBJECT_DID = "did:hedera:testnet:z6MkfViTz7XtRqFBNKzPwwLNCnQLbwb3t93cSnfyyDVrTZF4_0.0.30886078";

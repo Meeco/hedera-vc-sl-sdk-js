@@ -1,6 +1,6 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
-const { HcsVc, Issuer } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY, TOPIC_ID } = require("./.env.json");
+const { HcsVc, W3CCredential } = require("../dist");
+const { OPERATOR_ID, OPERATOR_KEY, SUBJECT_DID, ISSUER_DID, ISSUER_PK } = require("./.env.json");
 
 async function main() {
     /**
@@ -9,33 +9,40 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const issuerPrivateKey = PrivateKey.generate();
-    const issuer = new Issuer(issuerDID, "Test Issuer");
+    const hcsVc = new HcsVc(ISSUER_DID, PrivateKey.fromString(ISSUER_PK));
 
     /**
      *  Issue cred
      *
      */
-    const claims = {
-        name: "Melbourne Uni",
-        address: "Melbourne",
-        code: "12345",
-        course: {
-            id: "122345",
-            courseCode: "ws101",
-            name: "WorkSafe Basic Training Module",
-            version: "2021-01-01",
-            provider: "WorkPro Training",
+    debugger;
+    let vc = await hcsVc.issue({
+        credentialSubject: {
+            id: SUBJECT_DID,
+            givenName: "Jane",
+            familyName: "Doe",
+            degree: {
+                type: "BachelorDegree",
+                name: "Bachelor of Science and Arts",
+                college: "College of Engineering",
+            },
         },
-    };
-
-    const vc = new HcsVc({
-        issuer: issuer,
-        subjectDID: subjectDID,
-        client: client,
-        type: "cert ",
-        claims: claims,
-        expiryDate: _date,
+        credentialSchema: {
+            id: "https://example.org/examples/degree.json",
+            type: "JsonSchemaValidator2018",
+        },
+        expiration: new Date("2022-01-01T00:00:00Z"),
+        evidence: [
+            {
+                id: "https://example.edu/evidence/f2aeec97-fc0d-42bf-8ca7-0548192d4231",
+                type: ["DocumentVerification"],
+                verifier: "https://example.edu/issuers/14",
+                evidenceDocument: "DriversLicense",
+                subjectPresence: "Physical",
+                documentPresence: "Physical",
+                licenseNumber: "123AB4567",
+            },
+        ],
     });
 
     // create cred - singed by issuer pk
@@ -53,10 +60,10 @@ async function main() {
     // submit transaction
     // output : W3C Cred signed by issuer and subject as did -  "credentialHash": "7L6ZqXZzusWvMfzRCTrzjan2AgPFotQzfWqdzXwVNHkV"
 
-    const registeredDid = await vc.issue();
+    // const registeredDid = await vc.issue();
 
     //get status - ACTIVE, REVOKE, SU.....
-    const status = await vc.verifyStatus();
+    // const status = await vc.verifyStatus();
 
     // find out vc hash
     // create message
@@ -72,12 +79,10 @@ async function main() {
     // }
     // submit transaction
     // status
-    const revoke = await vc.revoke();
+    // const revoke = await vc.revoke();
 
-    console.log("\n");
-    console.log(`DID PRIVATE KEY: ${didPrivateKey.toString()}`);
-    console.log(`DID PUBLIC KEY: ${didPrivateKey.publicKey.toString()}`);
-    console.log(registeredDid.getIdentifier());
+    console.log("\n ======= VC ======== \n");
+    console.log(vc);
 }
 
 main();

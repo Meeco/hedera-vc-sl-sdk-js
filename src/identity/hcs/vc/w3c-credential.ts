@@ -8,6 +8,7 @@ import {
     Verifiable,
     VerifiableCredential,
     W3CCredential as W3CCredentialExternal,
+    normalizeCredential as W3CNormalizeCredential,
 } from "did-jwt-vc";
 import {
     hashJWTComponents,
@@ -330,7 +331,7 @@ export function normalizeCredential(
     input: Partial<VerifiableCredential> | Partial<JwtCredentialPayload>,
     removeOriginalFields = true
 ): Verifiable<W3CCredentialExternal> {
-    const result = normalizeCredential(input, removeOriginalFields);
+    const result = W3CNormalizeCredential(input, removeOriginalFields);
 
     return normalizeFix(input, result);
 }
