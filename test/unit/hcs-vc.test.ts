@@ -14,6 +14,17 @@ const NETWORK = "testnet";
 // hedera
 const MIRROR_PROVIDER = ["hcs." + NETWORK + ".mirrornode.hedera.com:5600"];
 
+// TODO: find out how to mock it
+
+// jest.mock("../../src/identity/hcs/vc/hcs-vc", () => {
+//     const originalModule = jest.requireActual("../../src/identity/hcs/vc/hcs-vc");
+//     return {
+//         __esModule: true,
+//         ...originalModule,
+//         submitTransaction: jest.fn(() => true),
+//     };
+// });
+
 describe("HcsVc", () => {
     let client;
     let hcsVc;
@@ -72,7 +83,5 @@ describe("HcsVc", () => {
             expect(credential.proof.verificationMethod).toEqual(ISSUER_DID + "#did-root-key");
             expect(credential.proof.created).toBeDefined();
         });
-
-        it("register signed credential hash message to hcs", async () => {});
     });
 });
