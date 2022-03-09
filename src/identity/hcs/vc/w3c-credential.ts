@@ -124,12 +124,19 @@ export class W3CCredential<T extends AnyCredentialSubject> implements Verifiable
             contexts = ["https://www.w3.org/2018/credentials/v1"],
             evidence,
             credentialSchema,
+            credentialStatus,
         }: {
             credentialSubject: any;
             expiration?: Date;
             contexts?: string[];
             evidence?: any;
             credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
+            credentialStatus?: {
+                id: string;
+                type: string;
+                revocationListIndex: string;
+                revocationListCredential: string;
+            };
         },
         signer: Issuer
     ): Promise<string> {
@@ -152,6 +159,10 @@ export class W3CCredential<T extends AnyCredentialSubject> implements Verifiable
 
         if (evidence) {
             (<any>payload.vc)["evidence"] = evidence;
+        }
+
+        if (credentialStatus) {
+            (<any>payload.vc)["credentialStatus"] = credentialStatus;
         }
 
         if (expiration) {

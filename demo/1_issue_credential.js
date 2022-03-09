@@ -1,6 +1,9 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
 const { HcsVc } = require("../dist");
 const { OPERATOR_ID, OPERATOR_KEY, SUBJECT_DID, ISSUER_DID, ISSUER_PK, TOPIC_ID } = require("./.env.json");
+var fs = require("fs");
+
+const rl = require("vc-revocation-list");
 
 async function main() {
     /**
@@ -11,15 +14,26 @@ async function main() {
 
     const hcsVc = new HcsVc(
         ISSUER_DID,
-        PrivateKey.fromString(ISSUER_PK),
+        PrivateKey.fromString(ISSUER_PK), // this is to sign message
         TOPIC_ID,
-        PrivateKey.fromString(OPERATOR_KEY),
+        PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client
     );
 
+    // const list = await rl.createList({ length: 100000 });
+    // const encodedList = await list.encode();
+
+    // fs.open("./demo/file.txt", "r", function (status, fd) {
+    //     fs.writeFileSync("./demo/file.txt", encodedList);
+
+    //     var buffer = Buffer.alloc(100);
+    //     fs.read(fd, buffer, 0, 100, 0, function (err, num) {
+    //         console.log(buffer.toString("utf8", 0, num));
+    //     });
+    // });
+
     /**
      *  Issue cred
-     *
      */
     let vc = await hcsVc.issue({
         credentialSubject: {

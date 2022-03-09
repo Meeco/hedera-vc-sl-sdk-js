@@ -7,6 +7,8 @@ import * as u8a from "uint8arrays";
 import { W3CCredential } from "./w3c-credential";
 import { VcMethodOperation } from "../../ vc-method-operation";
 import { HcsVcTransaction } from "./hcs-vc-transaction";
+import fs from "fs";
+const rl = require("vc-revocation-list");
 
 export type VCJWT = string;
 
@@ -15,15 +17,6 @@ export class HcsVc {
     public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
 
     protected onMessageConfirmed: (message: MessageEnvelope<HcsVcMessage>) => void;
-
-    // constructor(args: {
-    //     identifier?: string;
-    //     privateKey?: PrivateKey;
-    //     client?: Client;
-    //     onMessageConfirmed?: (message: MessageEnvelope<any>) => void;
-    // }) {
-    //     throw new Error('Method not implemented.');
-    // }
 
     /**
      * Public API
@@ -59,14 +52,64 @@ export class HcsVc {
         evidence?: any;
         credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
     }) {
-        const credential = await W3CCredential.create(args, this._issuer);
-        const credentialHash = credential.hash();
-        this.submitTransaction(VcMethodOperation.ISSUE, credentialHash, this.issuerPrivateKey);
-        return credential;
+        /**
+         * TODO: issue VC
+         * read file content from hedera
+         * decode revocation list
+         * check revocation list size
+         * create new one with size + 1
+         * encode new revocation list
+         * update hedera file with revocation list
+         * assign length index to VC RevocationList2020Status
+         * generate VC
+         *
+         */
+        try {
+            const encodedStatusList = fs.readFileSync("./demo/file.txt", "utf8");
+            console.log(encodedStatusList);
+            const decodedStatusList = encodedStatusList
+                ? await rl.decodeList({ encodedList: encodedStatusList })
+                : await rl.createList({ length: 1 });
+
+            console.log(decodedStatusList);
+
+            const newDecodedStatusList =
+                decodedStatusList.length > 1
+                    ? await rl.createList({ length: decodedStatusList.length + 1 })
+                    : decodedStatusList;
+
+            console.log(decodedStatusList);
+
+            let i: number = 0;
+            while (i < newDecodedStatusList.length - 1) {
+                console.log("index" + i);
+                newDecodedStatusList.setRevoked(i, decodedStatusList.isRevoked(i));
+                i++;
+            }
+
+            console.log(newDecodedStatusList);
+
+            const newEncodedStatusList = await newDecodedStatusList.encode();
+            fs.writeFileSync("./demo/file.txt", newEncodedStatusList);
+
+            args["credentialStatus"] = {
+                id: `https://dmv.example.gov/credentials/status/3#${newDecodedStatusList.length}`,
+                type: "RevocationList2020Status",
+                revocationListIndex: `${newDecodedStatusList.length}`,
+                revocationListCredential: "https://example.com/credentials/status/3",
+            };
+
+            const credential = await W3CCredential.create(args, this._issuer);
+            // const credentialHash = credential.hash();
+            // this.submitTransaction(VcMethodOperation.ISSUE, credentialHash, this.issuerPrivateKey);
+            return credential;
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     async revokeByHash(credentialHash: string) {
-        throw new Error("Method not implemented");
+        this.submitTransaction(VcMethodOperation.REVOKE, credentialHash, this.issuerPrivateKey);
     }
 
     async getStatus(credentialHash: string) {
