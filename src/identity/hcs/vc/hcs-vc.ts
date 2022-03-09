@@ -1,20 +1,37 @@
-import { Client, Hbar, PrivateKey, Timestamp, TopicId } from "@hashgraph/sdk";
-import { MessageEnvelope } from "../message-envelope";
-import { HcsVcMessage } from "./hcs-vc-message";
+import {
+    Client,
+    FileContentsQuery,
+    FileCreateTransaction,
+    FileId,
+    FileUpdateTransaction,
+    Hbar,
+    PrivateKey,
+    TopicId,
+} from "@hashgraph/sdk";
 import * as vc from "did-jwt-vc";
 import { Issuer } from "did-jwt-vc";
 import * as u8a from "uint8arrays";
-import { W3CCredential } from "./w3c-credential";
 import { VcMethodOperation } from "../../ vc-method-operation";
+import { MessageEnvelope } from "../message-envelope";
+import { HcsVcMessage } from "./hcs-vc-message";
 import { HcsVcTransaction } from "./hcs-vc-transaction";
-import fs from "fs";
+import { W3CCredential } from "./w3c-credential";
 const rl = require("vc-revocation-list");
 
 export type VCJWT = string;
 
 export class HcsVc {
+    public static REVOCATION_LIST_LENGTH = 100000;
+
     public static TRANSACTION_FEE = new Hbar(2);
     public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
+
+    /**
+     * TODO: Development code
+     */
+    public static TEST_FILE_KEY = PrivateKey.fromString(
+        "302e020100300506032b6570042204204c657138981d342db74776ffd80cf724eb6a04a8c98a5738f0414472ec104f82"
+    );
 
     protected onMessageConfirmed: (message: MessageEnvelope<HcsVcMessage>) => void;
 
@@ -41,62 +58,60 @@ export class HcsVc {
         return this._issuer;
     }
 
+    async createRevocationListFile() {
+        const revocationList = await rl.createList({ length: HcsVc.REVOCATION_LIST_LENGTH });
+        const encodedEevocationList = await revocationList.encode();
+
+        const transaction = await new FileCreateTransaction()
+            .setKeys([HcsVc.TEST_FILE_KEY.publicKey])
+            .setContents(encodedEevocationList)
+            .setMaxTransactionFee(new Hbar(2))
+            .freezeWith(this.client);
+
+        const signTx = await transaction.sign(HcsVc.TEST_FILE_KEY);
+        const submitTx = await signTx.execute(this.client);
+        const receipt = await submitTx.getReceipt(this.client);
+
+        return receipt.fileId;
+    }
+
+    async loadRevocationList(revocationListFileId: FileId) {
+        const query = new FileContentsQuery().setFileId(revocationListFileId);
+        const encodedStatusList = await query.execute(this.client);
+        const decodedStatusList = await rl.decodeList({ encodedList: encodedStatusList.toString() });
+
+        return decodedStatusList;
+    }
+
     /**
      * Add credential meta-data and sign, but do not submit.
      * @returns JWT encoded VC
      */
-    async issue(args: {
-        credentialSubject: any;
-        expiration: Date;
-        contexts?: string[];
-        evidence?: any;
-        credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
-    }) {
-        /**
-         * TODO: issue VC
-         * read file content from hedera
-         * decode revocation list
-         * check revocation list size
-         * create new one with size + 1
-         * encode new revocation list
-         * update hedera file with revocation list
-         * assign length index to VC RevocationList2020Status
-         * generate VC
-         *
-         */
+    async issue(
+        args: {
+            credentialSubject: any;
+            expiration: Date;
+            contexts?: string[];
+            evidence?: any;
+            credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
+        },
+        revocationListFileId: FileId,
+        revocationListIndex: number
+    ) {
+        if (!revocationListFileId) {
+            throw new Error("revocationListFileId param is missing");
+        }
+
+        if (typeof revocationListIndex !== "number" || revocationListIndex < 0) {
+            throw new Error("Invalid revocationListIndex param");
+        }
+
         try {
-            const encodedStatusList = fs.readFileSync("./demo/file.txt", "utf8");
-            console.log(encodedStatusList);
-            const decodedStatusList = encodedStatusList
-                ? await rl.decodeList({ encodedList: encodedStatusList })
-                : await rl.createList({ length: 1 });
-
-            console.log(decodedStatusList);
-
-            const newDecodedStatusList =
-                decodedStatusList.length > 1
-                    ? await rl.createList({ length: decodedStatusList.length + 1 })
-                    : decodedStatusList;
-
-            console.log(decodedStatusList);
-
-            let i: number = 0;
-            while (i < newDecodedStatusList.length - 1) {
-                console.log("index" + i);
-                newDecodedStatusList.setRevoked(i, decodedStatusList.isRevoked(i));
-                i++;
-            }
-
-            console.log(newDecodedStatusList);
-
-            const newEncodedStatusList = await newDecodedStatusList.encode();
-            fs.writeFileSync("./demo/file.txt", newEncodedStatusList);
-
             args["credentialStatus"] = {
-                id: `https://dmv.example.gov/credentials/status/3#${newDecodedStatusList.length}`,
+                id: `https://dmv.example.gov/credentials/status/3#${revocationListIndex}`,
                 type: "RevocationList2020Status",
-                revocationListIndex: `${newDecodedStatusList.length}`,
-                revocationListCredential: "https://example.com/credentials/status/3",
+                revocationListIndex: revocationListIndex,
+                revocationListCredential: `https://example.com/credentials/status/${revocationListFileId.toString()}`,
             };
 
             const credential = await W3CCredential.create(args, this._issuer);
@@ -106,6 +121,24 @@ export class HcsVc {
         } catch (err) {
             console.error(err);
         }
+    }
+
+    async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
+        const revocationList = await this.loadRevocationList(revocationListFileId);
+        revocationList.setRevoked(revocationListIndex, true);
+        const revocationListEncoded = await revocationList.encode();
+
+        const transaction = await new FileUpdateTransaction()
+            .setFileId(revocationListFileId)
+            .setContents(revocationListEncoded)
+            .setMaxTransactionFee(new Hbar(2))
+            .freezeWith(this.client);
+
+        const signTx = await transaction.sign(HcsVc.TEST_FILE_KEY);
+        const submitTx = await signTx.execute(this.client);
+        await submitTx.getReceipt(this.client);
+
+        return true;
     }
 
     async revokeByHash(credentialHash: string) {
