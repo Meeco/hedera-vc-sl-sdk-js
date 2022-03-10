@@ -11,10 +11,8 @@ import {
 import * as vc from "did-jwt-vc";
 import { Issuer } from "did-jwt-vc";
 import * as u8a from "uint8arrays";
-import { VcMethodOperation } from "../../ vc-method-operation";
-import { MessageEnvelope } from "../message-envelope";
-import { HcsVcMessage } from "./hcs-vc-message";
-import { HcsVcTransaction } from "./hcs-vc-transaction";
+import { VcStatus } from "../../ vc-status";
+
 import { W3CCredential } from "./w3c-credential";
 const rl = require("vc-revocation-list");
 
@@ -32,8 +30,6 @@ export class HcsVc {
     public static TEST_FILE_KEY = PrivateKey.fromString(
         "302e020100300506032b6570042204204c657138981d342db74776ffd80cf724eb6a04a8c98a5738f0414472ec104f82"
     );
-
-    protected onMessageConfirmed: (message: MessageEnvelope<HcsVcMessage>) => void;
 
     /**
      * Public API
@@ -83,10 +79,6 @@ export class HcsVc {
         return decodedStatusList;
     }
 
-    /**
-     * Add credential meta-data and sign, but do not submit.
-     * @returns JWT encoded VC
-     */
     async issue(
         args: {
             credentialSubject: any;
@@ -115,8 +107,6 @@ export class HcsVc {
             };
 
             const credential = await W3CCredential.create(args, this._issuer);
-            // const credentialHash = credential.hash();
-            // this.submitTransaction(VcMethodOperation.ISSUE, credentialHash, this.issuerPrivateKey);
             return credential;
         } catch (err) {
             console.error(err);
@@ -124,9 +114,39 @@ export class HcsVc {
     }
 
     async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        const revocationList = await this.loadRevocationList(revocationListFileId);
-        revocationList.setRevoked(revocationListIndex, true);
-        const revocationListEncoded = await revocationList.encode();
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKE);
+    }
+
+    async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
+        const revocationListDecoded = await this.loadRevocationList(revocationListFileId);
+
+        // set the bits
+        const firstBit = Number(revocationListDecoded.isRevoked(revocationListIndex)).toString();
+        const secondBit = Number(revocationListDecoded.isRevoked(revocationListIndex + 1)).toString();
+
+        return VcStatus[parseInt(firstBit + secondBit, 2)];
+    }
+
+    async suspendByIndex(revocationListFileId: FileId, revocationListIndex: number) {
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.SUSPENDED);
+    }
+
+    async resumeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.RESUME);
+    }
+
+    async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcStatus) {
+        const revocationListDecoded = await this.loadRevocationList(revocationListFileId);
+
+        // set the bits
+        let binary = status.toString(2);
+        binary = binary.length == 1 ? `0${binary}` : binary;
+        binary.split("").forEach(
+            (b, index) => revocationListDecoded.setRevoked(revocationListIndex + index, Boolean(parseInt(b)))
+            //console.log(`revocationListDecoded.setRevoked(${revocationListIndex + index}, ${Boolean(parseInt(b))})`)
+        );
+
+        const revocationListEncoded = await revocationListDecoded.encode();
 
         const transaction = await new FileUpdateTransaction()
             .setFileId(revocationListFileId)
@@ -138,59 +158,7 @@ export class HcsVc {
         const submitTx = await signTx.execute(this.client);
         await submitTx.getReceipt(this.client);
 
-        return true;
-    }
-
-    async revokeByHash(credentialHash: string) {
-        this.submitTransaction(VcMethodOperation.REVOKE, credentialHash, this.issuerPrivateKey);
-    }
-
-    async getStatus(credentialHash: string) {
-        throw new Error("Method not implemented");
-    }
-
-    /**
-     * Submit Message Transaction to Hashgraph
-     * @param vcMethodOperation
-     * @param event
-     * @param privateKey
-     * @returns this
-     */
-    private async submitTransaction(
-        VcMethodOperation: VcMethodOperation,
-        credentialHash: string,
-        issuerPrivateKey: PrivateKey
-    ): Promise<MessageEnvelope<HcsVcMessage>> {
-        const message = new HcsVcMessage(VcMethodOperation, credentialHash);
-        const envelope = new MessageEnvelope(message);
-        const transaction = new HcsVcTransaction(envelope, this._topicId);
-
-        return new Promise((resolve, reject) => {
-            transaction
-                .signMessage((msg) => {
-                    return issuerPrivateKey.sign(msg);
-                })
-                .buildAndSignTransaction((tx) => {
-                    return tx
-                        .setMaxTransactionFee(HcsVc.TRANSACTION_FEE)
-                        .freezeWith(this.client)
-                        .sign(this.accountPrivateKey);
-                })
-                .onError((err) => {
-                    // console.error(err);
-                    reject(err);
-                })
-                .onMessageConfirmed((msg) => {
-                    if (this.onMessageConfirmed) {
-                        this.onMessageConfirmed(msg);
-                    }
-
-                    console.log("Message Published");
-                    console.log(`Explore on DragonGlass: https://testnet.dragonglass.me/hedera/topics/${this.topicId}`);
-                    resolve(msg);
-                })
-                .execute(this.client);
-        });
+        return revocationListDecoded;
     }
 
     private createSigner(key: PrivateKey, did: string): Issuer {

@@ -2,3 +2,4 @@
 /dist/
 /demo/.env.json
 jest.setup.js
+.DS_Store

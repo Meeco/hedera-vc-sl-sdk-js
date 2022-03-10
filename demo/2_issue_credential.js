@@ -9,9 +9,6 @@ const {
     ISSUER_PK,
     TOPIC_ID,
 } = require("./.env.json");
-var fs = require("fs");
-
-const rl = require("vc-revocation-list");
 
 const revocationListFileId = FileId.fromString(REVOCATION_LIST_FILE_ID);
 
@@ -29,18 +26,6 @@ async function main() {
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client
     );
-
-    // const list = await rl.createList({ length: 100000 });
-    // const encodedList = await list.encode();
-
-    // fs.open("./demo/file.txt", "r", function (status, fd) {
-    //     fs.writeFileSync("./demo/file.txt", encodedList);
-
-    //     var buffer = Buffer.alloc(100);
-    //     fs.read(fd, buffer, 0, 100, 0, function (err, num) {
-    //         console.log(buffer.toString("utf8", 0, num));
-    //     });
-    // });
 
     /**
      *  Issue cred
@@ -78,46 +63,7 @@ async function main() {
         0
     );
 
-    // create cred - singed by issuer pk
-    // create hash
-    // create message
-    //{
-    //     "mode": "plain",
-    //     "message": {
-    //         "operation": "issue",
-    //         "credentialHash": "BSgRkqRSCZwZJrgWtbsTvZG7s93zBYYxP2Dtqwm25ajb",
-    //         "timestamp": "2022-03-04T02:47:18.192323Z"
-    //     },
-    //     "signature": "uw1Bl7ARRm27ZjhG+9aYRJ+N6zmzvZOI10koz6T6gSS5GJAci9OTnYyL2LVJgGilx1hAHCL2A3nkQ6AU6eNPCw=="
-    // }
-    // submit transaction
-    // output : W3C Cred signed by issuer and subject as did -  "credentialHash": "7L6ZqXZzusWvMfzRCTrzjan2AgPFotQzfWqdzXwVNHkV"
-
-    // const registeredDid = await vc.issue();
-
-    //get status - ACTIVE, REVOKE, SU.....
-    // const status = await vc.verifyStatus();
-
-    // find out vc hash
-    // create message
-    // create message
-    //{
-    //     "mode": "plain",
-    //     "message": {
-    //         "operation": "revoke",
-    //         "credentialHash": "BSgRkqRSCZwZJrgWtbsTvZG7s93zBYYxP2Dtqwm25ajb",
-    //         "timestamp": "2022-03-04T02:47:18.192323Z"
-    //     },
-    //     "signature": "uw1Bl7ARRm27ZjhG+9aYRJ+N6zmzvZOI10koz6T6gSS5GJAci9OTnYyL2LVJgGilx1hAHCL2A3nkQ6AU6eNPCw=="
-    // }
-    // submit transaction
-    // status
-    // const revoke = await vc.revoke();
-
-    console.log("\n ======= VC ======== \n");
     console.log(vc);
-
-    console.log("hash" + vc.hash());
 }
 
 main();

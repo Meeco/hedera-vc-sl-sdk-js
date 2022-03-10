@@ -19,9 +19,10 @@ async function main() {
 
     const revocationListFileId = FileId.fromString(REVOCATION_LIST_FILE_ID);
 
-    await hcsVc.revokeByIndex(revocationListFileId, 2);
+    const updatedList = await hcsVc.resumeByIndex(revocationListFileId, 0);
 
-    console.log(await hcsVc.loadRevocationList(revocationListFileId));
+    console.log("==== list ====");
+    console.log(updatedList);
 }
 
 main();
