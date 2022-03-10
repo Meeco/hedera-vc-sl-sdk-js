@@ -11,10 +11,9 @@ import {
 import * as vc from "did-jwt-vc";
 import { Issuer } from "did-jwt-vc";
 import * as u8a from "uint8arrays";
-import { VcStatus } from "../../ vc-status";
-
+import { createList, decodeList } from "vc-revocation-list";
+import { VcStatus } from "../../vc-status";
 import { W3CCredential } from "./w3c-credential";
-const rl = require("vc-revocation-list");
 
 export type VCJWT = string;
 
@@ -55,7 +54,7 @@ export class HcsVc {
     }
 
     async createRevocationListFile() {
-        const revocationList = await rl.createList({ length: HcsVc.REVOCATION_LIST_LENGTH });
+        const revocationList = await createList({ length: HcsVc.REVOCATION_LIST_LENGTH });
         const encodedEevocationList = await revocationList.encode();
 
         const transaction = await new FileCreateTransaction()
@@ -74,7 +73,7 @@ export class HcsVc {
     async loadRevocationList(revocationListFileId: FileId) {
         const query = new FileContentsQuery().setFileId(revocationListFileId);
         const encodedStatusList = await query.execute(this.client);
-        const decodedStatusList = await rl.decodeList({ encodedList: encodedStatusList.toString() });
+        const decodedStatusList = await decodeList({ encodedList: encodedStatusList.toString() });
 
         return decodedStatusList;
     }
