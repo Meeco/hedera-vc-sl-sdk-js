@@ -8,6 +8,7 @@ import {
     Verifiable,
     VerifiableCredential,
     W3CCredential as W3CCredentialExternal,
+    normalizeCredential as W3CNormalizeCredential,
 } from "did-jwt-vc";
 import {
     hashJWTComponents,
@@ -123,12 +124,19 @@ export class W3CCredential<T extends AnyCredentialSubject> implements Verifiable
             contexts = ["https://www.w3.org/2018/credentials/v1"],
             evidence,
             credentialSchema,
+            credentialStatus,
         }: {
             credentialSubject: any;
             expiration?: Date;
             contexts?: string[];
             evidence?: any;
             credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
+            credentialStatus?: {
+                id: string;
+                type: string;
+                revocationListIndex: string;
+                revocationListCredential: string;
+            };
         },
         signer: Issuer
     ): Promise<string> {
@@ -151,6 +159,10 @@ export class W3CCredential<T extends AnyCredentialSubject> implements Verifiable
 
         if (evidence) {
             (<any>payload.vc)["evidence"] = evidence;
+        }
+
+        if (credentialStatus) {
+            (<any>payload.vc)["credentialStatus"] = credentialStatus;
         }
 
         if (expiration) {
@@ -330,7 +342,7 @@ export function normalizeCredential(
     input: Partial<VerifiableCredential> | Partial<JwtCredentialPayload>,
     removeOriginalFields = true
 ): Verifiable<W3CCredentialExternal> {
-    const result = normalizeCredential(input, removeOriginalFields);
+    const result = W3CNormalizeCredential(input, removeOriginalFields);
 
     return normalizeFix(input, result);
 }
