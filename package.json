@@ -19,8 +19,8 @@
         "build:dev": "tsc --sourceMap -w",
         "start": "node dist/index.js",
         "start:dev": "nodemon --inspect dist/index.js",
-        "test": "npm run test-node",
-        "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 30000 -A -R ${REPORTER:-spec} --require tests/test-mocha.js tests/*.spec.js"
+        "test": "tsc && npm run test-node",
+        "test-node": "cross-env NODE_ENV=test mocha -r esm --preserve-symlinks -t 30000 -A -R ${REPORTER:-spec} --require test/test-mocha.js test/*.spec.js"
     },
     "repository": {
         "type": "git",
@@ -43,7 +43,7 @@
         "chai": "^4.2.0",
         "cross-env": "^5.2.0",
         "eslint": "^7.26.0",
-        "eslint-config-digitalbazaar": "^2.8.0"
+        "nyc": "^15.0.0"
     },
     "dependencies": {
         "@hashgraph/did-sdk-js": "github:Meeco/did-sdk-js#ff914da5377fc69d8d9d292232a1aba04f1ba74c",
@@ -58,5 +58,10 @@
         "sha.js": "^2.4.11",
         "varint": "^6.0.0",
         "vc-revocation-list": "^3.0.0"
+    },
+    "nyc": {
+        "exclude": [
+            "test"
+        ]
     }
 }

@@ -3,4 +3,6 @@
 /demo/.env.json
 jest.setup.js
 .DS_Store
-/tests/.env.json
+/test/.env.json
+/.nyc_output
+/coverage
