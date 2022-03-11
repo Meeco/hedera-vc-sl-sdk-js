@@ -116,6 +116,10 @@ export class HcsVc {
         return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKE);
     }
 
+    async issueByIndex(revocationListFileId: FileId, revocationListIndex: number) {
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.ISSUE);
+    }
+
     async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
         const revocationListDecoded = await this.loadRevocationList(revocationListFileId);
 
