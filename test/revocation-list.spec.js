@@ -2,11 +2,11 @@
  * Copyright (c) 2020-2021 Digital Bazaar, Inc. All rights reserved.
  */
 const { PrivateKey, Client, FileContentsQuery } = require("@hashgraph/sdk");
-const { HcsVc, VcStatus } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY, ISSUER_DID, ISSUER_PK, TOPIC_ID } = require("./.env.json");
+const { HcsRl, VcStatus } = require("../dist");
+const { OPERATOR_ID, OPERATOR_KEY } = require("./.env.json");
 
-describe("HcsVc", () => {
-    let hcsVc;
+describe("HcsRl", () => {
+    let hcsRl;
     let client;
     let fileId;
 
@@ -14,14 +14,11 @@ describe("HcsVc", () => {
         client = Client.forTestnet();
         client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-        hcsVc = new HcsVc(
-            ISSUER_DID,
-            PrivateKey.fromString(ISSUER_PK), // this is to sign message
-            TOPIC_ID,
+        hcsRl = new HcsRl(
             PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
             client
         );
-        fileId = await hcsVc.createRevocationListFile();
+        fileId = await hcsRl.createRevocationListFile();
     });
 
     describe("revocation list", () => {
@@ -38,26 +35,26 @@ describe("HcsVc", () => {
 
         describe("#CredentialStatus", () => {
             it("should apply revoke status to revocation list index 0", async () => {
-                await hcsVc.revokeByIndex(fileId, 0);
-                const status = await hcsVc.resolveStatusByIndex(fileId, 0);
+                await hcsRl.revokeByIndex(fileId, 0);
+                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcStatus[status], VcStatus.REVOKE);
             });
 
             it("should apply suspend status to revocation list index 0", async () => {
-                await hcsVc.suspendByIndex(fileId, 0);
-                const status = await hcsVc.resolveStatusByIndex(fileId, 0);
+                await hcsRl.suspendByIndex(fileId, 0);
+                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcStatus[status], VcStatus.SUSPENDED);
             });
 
             it("should apply resume status to revocation list index 0", async () => {
-                await hcsVc.resumeByIndex(fileId, 0);
-                const status = await hcsVc.resolveStatusByIndex(fileId, 0);
+                await hcsRl.resumeByIndex(fileId, 0);
+                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcStatus[status], VcStatus.RESUME);
             });
 
             it("should apply issue status to revocation list index 0", async () => {
-                await hcsVc.issueByIndex(fileId, 0);
-                const status = await hcsVc.resolveStatusByIndex(fileId, 0);
+                await hcsRl.issueByIndex(fileId, 0);
+                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcStatus[status], VcStatus.ISSUE);
             });
         });
