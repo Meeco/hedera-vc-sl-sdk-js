@@ -1,6 +1,6 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
 const { HcsRl } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY } = require("./.env.json");
+const { OPERATOR_ID, OPERATOR_KEY, REVOCATION_LIST_OWNER_PRIVATE_KEY } = require("./.env.json");
 
 async function main() {
     /**
@@ -11,7 +11,8 @@ async function main() {
 
     const hcsVc = new HcsRl(
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
-        client
+        client,
+        PrivateKey.fromString(REVOCATION_LIST_OWNER_PRIVATE_KEY)
     );
 
     const revocationListFileId = await hcsVc.createRevocationListFile();
