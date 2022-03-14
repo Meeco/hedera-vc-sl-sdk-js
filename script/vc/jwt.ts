@@ -1,5 +1,5 @@
 import { decodeJWT } from "did-jwt";
-import * as util from "../../../utils/jwt";
+import * as util from "./utils/jwt";
 
 // note: the following mirror those in did-jwt/lib/JWT because webpack can't always resolve these module paths
 // when using this lib as a submodule.

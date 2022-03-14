@@ -1,6 +1,6 @@
 const { PrivateKey, Client } = require("@hashgraph/sdk");
-const { HcsVc } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY, ISSUER_DID, ISSUER_PK, TOPIC_ID } = require("./.env.json");
+const { HcsRl } = require("../dist");
+const { OPERATOR_ID, OPERATOR_KEY } = require("./.env.json");
 
 async function main() {
     /**
@@ -9,10 +9,7 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hcsVc = new HcsVc(
-        ISSUER_DID,
-        PrivateKey.fromString(ISSUER_PK), // this is to sign message
-        TOPIC_ID,
+    const hcsVc = new HcsRl(
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client
     );

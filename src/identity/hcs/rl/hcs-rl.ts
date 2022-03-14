@@ -6,18 +6,11 @@ import {
     FileUpdateTransaction,
     Hbar,
     PrivateKey,
-    TopicId,
 } from "@hashgraph/sdk";
-import * as vc from "did-jwt-vc";
-import { Issuer } from "did-jwt-vc";
-import * as u8a from "uint8arrays";
-import { createList, decodeList } from "vc-revocation-list";
+import * as rl from "vc-revocation-list";
 import { VcStatus } from "../../vc-status";
-import { W3CCredential } from "./w3c-credential";
 
-export type VCJWT = string;
-
-export class HcsVc {
+export class HcsRl {
     public static REVOCATION_LIST_LENGTH = 100000;
 
     public static TRANSACTION_FEE = new Hbar(2);
@@ -34,36 +27,19 @@ export class HcsVc {
      * Public API
      */
 
-    protected _issuer: vc.Issuer;
-    protected _topicId: TopicId;
-
-    constructor(
-        protected issuerDID: string,
-        protected issuerPrivateKey: PrivateKey,
-        protected topicId: string,
-        protected accountPrivateKey: PrivateKey,
-        protected client: Client
-    ) {
-        // signs with EdDSA/Ed2219
-        this._issuer = this.createSigner(this.issuerPrivateKey, this.issuerDID);
-        this._topicId = TopicId.fromString(topicId);
-    }
-
-    get signer() {
-        return this._issuer;
-    }
+    constructor(protected accountPrivateKey: PrivateKey, protected client: Client) {}
 
     async createRevocationListFile() {
-        const revocationList = await createList({ length: HcsVc.REVOCATION_LIST_LENGTH });
+        const revocationList = await rl.createList({ length: HcsRl.REVOCATION_LIST_LENGTH });
         const encodedEevocationList = await revocationList.encode();
 
         const transaction = await new FileCreateTransaction()
-            .setKeys([HcsVc.TEST_FILE_KEY.publicKey])
+            .setKeys([HcsRl.TEST_FILE_KEY.publicKey])
             .setContents(encodedEevocationList)
             .setMaxTransactionFee(new Hbar(2))
             .freezeWith(this.client);
 
-        const signTx = await transaction.sign(HcsVc.TEST_FILE_KEY);
+        const signTx = await transaction.sign(HcsRl.TEST_FILE_KEY);
         const submitTx = await signTx.execute(this.client);
         const receipt = await submitTx.getReceipt(this.client);
 
@@ -73,47 +49,17 @@ export class HcsVc {
     async loadRevocationList(revocationListFileId: FileId) {
         const query = new FileContentsQuery().setFileId(revocationListFileId);
         const encodedStatusList = await query.execute(this.client);
-        const decodedStatusList = await decodeList({ encodedList: encodedStatusList.toString() });
+        const decodedStatusList = await rl.decodeList({ encodedList: encodedStatusList.toString() });
 
         return decodedStatusList;
     }
 
-    async issue(
-        args: {
-            credentialSubject: any;
-            expiration: Date;
-            contexts?: string[];
-            evidence?: any;
-            credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
-        },
-        revocationListFileId: FileId,
-        revocationListIndex: number
-    ) {
-        if (!revocationListFileId) {
-            throw new Error("revocationListFileId param is missing");
-        }
-
-        if (typeof revocationListIndex !== "number" || revocationListIndex < 0) {
-            throw new Error("Invalid revocationListIndex param");
-        }
-
-        try {
-            args["credentialStatus"] = {
-                id: `https://dmv.example.gov/credentials/status/3#${revocationListIndex}`,
-                type: "RevocationList2020Status",
-                revocationListIndex: revocationListIndex,
-                revocationListCredential: `https://example.com/credentials/status/${revocationListFileId.toString()}`,
-            };
-
-            const credential = await W3CCredential.create(args, this._issuer);
-            return credential;
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
     async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
         return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKE);
+    }
+
+    async issueByIndex(revocationListFileId: FileId, revocationListIndex: number) {
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.ISSUE);
     }
 
     async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
@@ -153,23 +99,10 @@ export class HcsVc {
             .setMaxTransactionFee(new Hbar(2))
             .freezeWith(this.client);
 
-        const signTx = await transaction.sign(HcsVc.TEST_FILE_KEY);
+        const signTx = await transaction.sign(HcsRl.TEST_FILE_KEY);
         const submitTx = await signTx.execute(this.client);
         await submitTx.getReceipt(this.client);
 
         return revocationListDecoded;
-    }
-
-    private createSigner(key: PrivateKey, did: string): Issuer {
-        return {
-            did,
-            signer: (msg: string | Uint8Array) => {
-                const input = typeof msg === "string" ? u8a.fromString(msg) : msg;
-                const sig = key.sign(input);
-                return Promise.resolve(u8a.toString(sig, "base64url"));
-            },
-            // ref: https://tools.ietf.org/html/rfc8037#appendix-A.4
-            alg: "EdDSA",
-        };
     }
 }
