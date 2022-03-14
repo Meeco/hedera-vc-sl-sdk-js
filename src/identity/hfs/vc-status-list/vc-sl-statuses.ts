@@ -1,4 +1,4 @@
-export enum VcStatus {
+export enum VcSlStatuses {
     ACTIVE = 0,
     RESUMED = 1,
     SUSPENDED = 2,

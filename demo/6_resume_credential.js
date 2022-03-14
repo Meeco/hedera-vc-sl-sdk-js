@@ -1,5 +1,5 @@
 const { PrivateKey, Client, FileId } = require("@hashgraph/sdk");
-const { HcsRl } = require("../dist");
+const { HfsVcSl } = require("../dist");
 const {
     OPERATOR_ID,
     OPERATOR_KEY,
@@ -14,7 +14,7 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hcsVc = new HcsVc(
+    const hcsVc = new HfsVcSl(
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client,
         PrivateKey.fromString(REVOCATION_LIST_OWNER_PRIVATE_KEY)
