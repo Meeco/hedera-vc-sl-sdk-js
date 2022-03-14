@@ -19,7 +19,7 @@ import {
     toJWTTimestamp,
     toW3CTimestamp,
     validateDates,
-} from "../../../utils/jwt";
+} from "./utils/jwt";
 import { JWTDecoded } from "./jwt";
 
 const copiedProperties = [
