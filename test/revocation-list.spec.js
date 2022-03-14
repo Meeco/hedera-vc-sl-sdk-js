@@ -2,10 +2,10 @@
  * Copyright (c) 2020-2021 Digital Bazaar, Inc. All rights reserved.
  */
 const { PrivateKey, Client, FileContentsQuery } = require("@hashgraph/sdk");
-const { HcsRl, VcStatus } = require("../dist");
+const { HfsVcSl, VcSlStatuses } = require("../dist");
 const { OPERATOR_ID, OPERATOR_KEY } = require("./.env.json");
 
-describe("HcsRl", () => {
+describe("HfsVcSl", () => {
     let hcsRl;
     let client;
     let fileId;
@@ -14,7 +14,7 @@ describe("HcsRl", () => {
         client = Client.forTestnet();
         client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-        hcsRl = new HcsRl(
+        hcsRl = new HfsVcSl(
             PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
             client
         );
@@ -37,25 +37,25 @@ describe("HcsRl", () => {
             it("should apply revoke status to revocation list index 0", async () => {
                 await hcsRl.revokeByIndex(fileId, 0);
                 const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcStatus[status], VcStatus.REVOKE);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.REVOKE);
             });
 
             it("should apply suspend status to revocation list index 0", async () => {
                 await hcsRl.suspendByIndex(fileId, 0);
                 const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcStatus[status], VcStatus.SUSPENDED);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.SUSPENDED);
             });
 
             it("should apply resume status to revocation list index 0", async () => {
                 await hcsRl.resumeByIndex(fileId, 0);
                 const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcStatus[status], VcStatus.RESUME);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.RESUME);
             });
 
             it("should apply issue status to revocation list index 0", async () => {
                 await hcsRl.issueByIndex(fileId, 0);
                 const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcStatus[status], VcStatus.ISSUE);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.ISSUE);
             });
         });
     });
