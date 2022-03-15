@@ -1,9 +1,9 @@
 const { PrivateKey, Client, FileContentsQuery } = require("@hashgraph/sdk");
-const { HfsVcSl, VcStatus } = require("../../dist");
+const { HfsVcSl, VcSlStatuses } = require("../../dist");
 const { OPERATOR_ID, OPERATOR_KEY } = require("../.env.json");
 
 describe("HfsVcSl", () => {
-    let hcsRl;
+    let hfsVcSl;
     let client;
     let fileId;
 
@@ -12,12 +12,12 @@ describe("HfsVcSl", () => {
         client.setOperator(OPERATOR_ID, OPERATOR_KEY);
         const revocationListOwnerPrivateKey = PrivateKey.generate();
 
-        hcsRl = new HfsVcSl(
+        hfsVcSl = new HfsVcSl(
             PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
             client,
             revocationListOwnerPrivateKey
         );
-        fileId = await hcsRl.createRevocationListFile();
+        fileId = await hfsVcSl.createRevocationListFile();
     });
 
     describe("revocation list", () => {
@@ -34,39 +34,27 @@ describe("HfsVcSl", () => {
 
         describe("#CredentialStatus", () => {
             it("should apply revoke status to revocation list index 0", async () => {
-                await hcsRl.revokeByIndex(fileId, 0);
-                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-<<<<<<< HEAD:test/integration/revocation-list.spec.js
-                assert.equal(VcStatus[status], VcStatus.REVOKED);
-=======
+                await hfsVcSl.revokeByIndex(fileId, 0);
+                const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcSlStatuses[status], VcSlStatuses.REVOKE);
->>>>>>> 37585c4 (rename project to vc status list):test/revocation-list.spec.js
             });
 
             it("should apply suspend status to revocation list index 0", async () => {
-                await hcsRl.suspendByIndex(fileId, 0);
-                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
+                await hfsVcSl.suspendByIndex(fileId, 0);
+                const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcSlStatuses[status], VcSlStatuses.SUSPENDED);
             });
 
             it("should apply resume status to revocation list index 0", async () => {
-                await hcsRl.resumeByIndex(fileId, 0);
-                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-<<<<<<< HEAD:test/integration/revocation-list.spec.js
-                assert.equal(VcStatus[status], VcStatus.RESUMED);
-=======
+                await hfsVcSl.resumeByIndex(fileId, 0);
+                const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
                 assert.equal(VcSlStatuses[status], VcSlStatuses.RESUME);
->>>>>>> 37585c4 (rename project to vc status list):test/revocation-list.spec.js
             });
 
             it("should apply issue status to revocation list index 0", async () => {
-                await hcsRl.issueByIndex(fileId, 0);
-                const status = await hcsRl.resolveStatusByIndex(fileId, 0);
-<<<<<<< HEAD:test/integration/revocation-list.spec.js
-                assert.equal(VcStatus[status], VcStatus.ACTIVE);
-=======
-                assert.equal(VcSlStatuses[status], VcSlStatuses.ISSUE);
->>>>>>> 37585c4 (rename project to vc status list):test/revocation-list.spec.js
+                await hfsVcSl.issueByIndex(fileId, 0);
+                const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
+                assert.equal(VcSlStatuses[status], VcStatus.ACTIVE);
             });
         });
     });
