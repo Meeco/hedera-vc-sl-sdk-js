@@ -23,7 +23,7 @@ export class VC {
             evidence?: any;
             credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
         },
-        revocationListFileId: number,
+        revocationListFileId: string,
         revocationListIndex: number
     ) {
         if (!revocationListFileId) {
@@ -39,7 +39,7 @@ export class VC {
                 id: `https://dmv.example.gov/credentials/status/3#${revocationListIndex}`,
                 type: "RevocationList2020Status",
                 revocationListIndex: revocationListIndex,
-                revocationListCredential: `https://example.com/credentials/status/${revocationListFileId.toString()}`,
+                revocationListCredential: `https://example.com/credentials/status/${revocationListFileId}`,
             };
 
             const credential = await W3CCredential.create(args, this._issuer);
