@@ -14,7 +14,7 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hcsVc = new HfsVcSl(
+    const hfsVc = new HfsVcSl(
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client,
         PrivateKey.fromString(REVOCATION_LIST_OWNER_PRIVATE_KEY)
@@ -22,10 +22,9 @@ async function main() {
 
     const revocationListFileId = FileId.fromString(REVOCATION_LIST_FILE_ID);
 
-    const updatedList = await hcsVc.revokeByIndex(revocationListFileId, 0);
+    await hfsVc.revokeByIndex(revocationListFileId, 0);
 
-    console.log("==== list ====");
-    console.log(updatedList);
+    console.log("REVOKED");
 }
 
 main();

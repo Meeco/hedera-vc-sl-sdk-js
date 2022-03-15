@@ -23,7 +23,7 @@ export class VC {
             evidence?: any;
             credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
         },
-        revocationListFileId: number,
+        revocationListFileId: string,
         revocationListIndex: number
     ) {
         if (!revocationListFileId) {

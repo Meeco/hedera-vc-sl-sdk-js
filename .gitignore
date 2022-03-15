@@ -1,6 +1,7 @@
 /node_modules/
 /dist/
 /demo/.env.json
+/demo/vc/.env.json
 jest.setup.js
 .DS_Store
 /test/.env.json

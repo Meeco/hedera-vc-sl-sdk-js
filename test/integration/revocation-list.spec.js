@@ -34,9 +34,9 @@ describe("HfsVcSl", () => {
 
         describe("#CredentialStatus", () => {
             it("should apply revoke status to revocation list index 0", async () => {
-                await hfsVcSl.revokeByIndex(fileId, 0);
+                const test = await hfsVcSl.revokeByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatuses[status], VcSlStatuses.REVOKE);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.REVOKED);
             });
 
             it("should apply suspend status to revocation list index 0", async () => {
@@ -48,13 +48,13 @@ describe("HfsVcSl", () => {
             it("should apply resume status to revocation list index 0", async () => {
                 await hfsVcSl.resumeByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatuses[status], VcSlStatuses.RESUME);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.RESUMED);
             });
 
             it("should apply issue status to revocation list index 0", async () => {
                 await hfsVcSl.issueByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatuses[status], VcStatus.ACTIVE);
+                assert.equal(VcSlStatuses[status], VcSlStatuses.ACTIVE);
             });
         });
     });
