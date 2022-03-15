@@ -8,9 +8,9 @@ import {
     PrivateKey,
 } from "@hashgraph/sdk";
 import * as rl from "vc-revocation-list";
-import { VcStatus } from "../../vc-status";
+import { VcSlStatus } from "./vc-sl-status";
 
-export class HcsRl {
+export class HfsVcSl {
     public static REVOCATION_LIST_LENGTH = 100000;
 
     public static TRANSACTION_FEE = new Hbar(2);
@@ -27,7 +27,7 @@ export class HcsRl {
     ) {}
 
     async createRevocationListFile() {
-        const revocationList = await rl.createList({ length: HcsRl.REVOCATION_LIST_LENGTH });
+        const revocationList = await rl.createList({ length: HfsVcSl.REVOCATION_LIST_LENGTH });
         const encodedEevocationList = await revocationList.encode();
 
         const transaction = await new FileCreateTransaction()
@@ -52,11 +52,11 @@ export class HcsRl {
     }
 
     async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.REVOKED);
     }
 
     async issueByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.ACTIVE);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.ACTIVE);
     }
 
     async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
@@ -66,18 +66,18 @@ export class HcsRl {
         const firstBit = Number(revocationListDecoded.isRevoked(revocationListIndex)).toString();
         const secondBit = Number(revocationListDecoded.isRevoked(revocationListIndex + 1)).toString();
 
-        return VcStatus[parseInt(`${firstBit}${secondBit}`, 2)];
+        return VcSlStatus[parseInt(`${firstBit}${secondBit}`, 2)];
     }
 
     async suspendByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.SUSPENDED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.SUSPENDED);
     }
 
     async resumeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.RESUMED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.RESUMED);
     }
 
-    async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcStatus) {
+    async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcSlStatus) {
         const revocationListDecoded = await this.loadRevocationList(revocationListFileId);
 
         // set the bits

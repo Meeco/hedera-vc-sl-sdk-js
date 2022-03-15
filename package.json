@@ -1,11 +1,11 @@
 {
-    "name": "@hashgraph/vc-sdk-js",
+    "name": "@hashgraph/vc-sl-sdk-js",
     "version": "1.0.0",
     "engines": {
         "npm": ">=8.1.2",
         "node": ">=16.13.1"
     },
-    "description": "Support for the Hedera Hashgraph DID Method on the Hedera JavaScript/TypeScript SDK",
+    "description": "Support for the Verifiable Credential Status List 2021 using Hedera File Service JavaScript/TypeScript SDK",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "files": [

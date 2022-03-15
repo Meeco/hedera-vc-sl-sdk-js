@@ -1,5 +1,5 @@
 const { PrivateKey, Client, FileId } = require("@hashgraph/sdk");
-const { HcsRl } = require("../dist");
+const { HfsVcSl } = require("../dist");
 const {
     OPERATOR_ID,
     OPERATOR_KEY,
@@ -14,7 +14,7 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hcsVc = new HcsRl(
+    const hfsVc = new HfsVcSl(
         PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
         client,
         PrivateKey.fromString(REVOCATION_LIST_OWNER_PRIVATE_KEY)
@@ -22,10 +22,9 @@ async function main() {
 
     const revocationListFileId = FileId.fromString(REVOCATION_LIST_FILE_ID);
 
-    const updatedList = await hcsVc.suspendByIndex(revocationListFileId, 0);
+    await hfsVc.resumeByIndex(revocationListFileId, 0);
 
-    console.log("==== list ====");
-    console.log(updatedList);
+    console.log("RESUMED");
 }
 
 main();
