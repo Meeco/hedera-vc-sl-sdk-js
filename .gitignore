@@ -7,3 +7,4 @@ jest.setup.js
 /test/.env.json
 /.nyc_output
 /coverage
+/script/dist

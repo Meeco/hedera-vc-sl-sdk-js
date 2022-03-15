@@ -8,7 +8,7 @@ import {
     PrivateKey,
 } from "@hashgraph/sdk";
 import * as rl from "vc-revocation-list";
-import { VcSlStatuses } from "./vc-sl-statuses";
+import { VcSlStatus } from "./vc-sl-status";
 
 export class HfsVcSl {
     public static REVOCATION_LIST_LENGTH = 100000;
@@ -52,11 +52,11 @@ export class HfsVcSl {
     }
 
     async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatuses.REVOKED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.REVOKED);
     }
 
     async issueByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatuses.ACTIVE);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.ACTIVE);
     }
 
     async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
@@ -66,18 +66,18 @@ export class HfsVcSl {
         const firstBit = Number(revocationListDecoded.isRevoked(revocationListIndex)).toString();
         const secondBit = Number(revocationListDecoded.isRevoked(revocationListIndex + 1)).toString();
 
-        return VcSlStatuses[parseInt(`${firstBit}${secondBit}`, 2)];
+        return VcSlStatus[parseInt(`${firstBit}${secondBit}`, 2)];
     }
 
     async suspendByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatuses.SUSPENDED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.SUSPENDED);
     }
 
     async resumeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatuses.RESUMED);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcSlStatus.RESUMED);
     }
 
-    async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcSlStatuses) {
+    async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcSlStatus) {
         const revocationListDecoded = await this.loadRevocationList(revocationListFileId);
 
         // set the bits

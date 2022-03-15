@@ -1,4 +1,4 @@
 import { HfsVcSl } from "./identity/hfs/vc-status-list/hfs-vc-sl";
-import { VcSlStatuses } from "./identity/hfs/vc-status-list/vc-sl-statuses";
+import { VcSlStatus } from "./identity/hfs/vc-status-list/vc-sl-status";
 
-export { HfsVcSl, VcSlStatuses };
+export { HfsVcSl, VcSlStatus };

@@ -1,5 +1,5 @@
 const { PrivateKey } = require("@hashgraph/sdk");
-const { VC } = require("../../dist/script/vc");
+const { VC } = require("../../script/dist");
 const { ISSUER_DID, ISSUER_PK, SUBJECT_DID } = require("./.env.json");
 
 async function main() {
