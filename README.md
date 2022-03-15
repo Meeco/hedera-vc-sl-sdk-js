@@ -1,11 +1,15 @@
-# vc-sdk-js
+# vc-sl-sdk-js
 
 ## Overview
+
+Support for the Verifiable Credential Status List on the Hedera File Service JavaScript/TypeScript SDK.
+
+This repository contains the SDK for managing [Verifiable Credential Status List 2021](https://w3c-ccg.github.io/vc-status-list-2021) using the [Hedera File Service](https://docs.hedera.com/guides/docs/sdks/file-storage).
 
 ## Usage
 
 ```sh
-npm install --save @hashgraph/vc-sdk-js
+npm install --save @hashgraph/vc-sl-sdk-js
 ```
 
 ## Setup Hedera Portal Account
@@ -22,31 +26,54 @@ npm install --save @hashgraph/vc-sdk-js
 }
 ```
 
-- Following examples use accountId as `OPERATOR_ID` and privateKey string value as `OPERATOR_KEY` to submit DID Event Messages to HCS.
+## Configuration
 
-## Examples
+Following examples use accountId as `OPERATOR_ID` and privateKey string value as `OPERATOR_KEY` & `VC_STATUS_LIST_OWNER_PRIVATE_KEY` to submit VC Status List to [Hedera File Service](https://docs.hedera.com/guides/docs/sdks/file-storage).
 
-Sample demo step by step javascript example are available at [Demo Folder][demo-location]. Make sure to add appropriate `testnet` account details in <b>`.env.json`</b>
+## Run Examples
 
-- OPERATOR_ID=0.0.xxxx
-- OPERATOR_KEY=302...
+Sample demo step by step javascript example are available at [Demo Folder](https://github.com/Meeco/vc-sdk-js/tree/main/demo). Make sure to add appropriate `testnet` account details in <b>`.env.json`</b>
 
-After running first step of the demo flow use printed out values to complete the <b>`.env.json`</b> configuration file.
+```json
+{
+    "OPERATOR_ID": "0.0...",
+    "OPERATOR_KEY": "302e0201..",
+    "VC_STATUS_LIST_OWNER_PRIVATE_KEY": "302e0201.."
+}
+```
 
-- DID_IDENTIFIER=did:hedera:testnet:..._0.0.xxx
-- DID_PRIVATE_KEY=302...
+### Setup 1
+
+```sh
+npm install
+node demo/1_create_vc_status_list.js 
+```
+
+After running first step of the demo flow use printed out `VC_STATUS_LIST_FILE_ID` values to complete the <b>`.env.json`</b> configuration file.
+
+```json
+{
+...
+...
+"VC_STATUS_LIST_FILE_ID": "0.0..."
+}
+```
 
 That's it! You are set to execute other demo flows.
 
-```javascript
-const OPERATOR_ID=0.0.xxxx;
-const PRIVATE_KEY_STR=302...;
-
+```sh
+node demo/2_change_vc_status_to_ACTIVE.js
+node demo/3_resolve_vc_status.js
+node demo/4_change_vc_status_to_REVOKED.js
+node demo/5_change_vc_status_to_SUSPENDED.js
+node demo/6_change_vc_status_to_RESUMED.js
+node demo/3_resolve_vc_status.js
+```
 
 ## Development
 
 ```sh
-git clone git@github.com:hashgraph/vc-sdk-js.git
+git clone git@github.com:hashgraph/vc-sl-sdk-js.git
 ```
 
 First, you need to install dependencies and build the project
@@ -63,13 +90,7 @@ npm run build:dev
 
 ## Tests
 
-Run Unit Tests
-
-```sh
-npm run test:unit
-```
-
-Run Integration Test
+Run Test
 
 Open jest.setup.js file and update the following environment variables with your `testnet` account details
 
@@ -79,17 +100,15 @@ process.env.OPERATOR_KEY = "302e02...";
 ```
 
 ```sh
-npm run test:integration
+npm run test
 ```
 
 ## References
 
-- <https://github.com/hashgraph/did-method>
-- <https://github.com/hashgraph/hedera-sdk-js>
+- <https://w3c-ccg.github.io/vc-status-list-2021/>
+- <https://docs.hedera.com/guides/docs/sdks/file-storage>
 - <https://docs.hedera.com/hedera-api/>
 - <https://www.hedera.com/>
-- <https://www.w3.org/TR/did-core/>
-- <https://www.w3.org/TR/vc-data-model/>
 
 ## License Information
 

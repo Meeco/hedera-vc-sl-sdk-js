@@ -14,7 +14,6 @@ export class HfsVcSl {
     public static REVOCATION_LIST_LENGTH = 100000;
 
     public static TRANSACTION_FEE = new Hbar(2);
-    public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
 
     /**
      * Public API
@@ -33,7 +32,7 @@ export class HfsVcSl {
         const transaction = await new FileCreateTransaction()
             .setKeys([this.revocationListOwnerPrivateKey.publicKey])
             .setContents(encodedEevocationList)
-            .setMaxTransactionFee(new Hbar(2))
+            .setMaxTransactionFee(HfsVcSl.TRANSACTION_FEE)
             .freezeWith(this.client);
 
         const signTx = await transaction.sign(this.revocationListOwnerPrivateKey);
@@ -92,7 +91,7 @@ export class HfsVcSl {
         const transaction = await new FileUpdateTransaction()
             .setFileId(revocationListFileId)
             .setContents(revocationListEncoded)
-            .setMaxTransactionFee(new Hbar(2))
+            .setMaxTransactionFee(HfsVcSl.TRANSACTION_FEE)
             .freezeWith(this.client);
 
         const signTx = await transaction.sign(this.revocationListOwnerPrivateKey);
