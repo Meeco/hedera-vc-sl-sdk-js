@@ -15,33 +15,14 @@ export class VC {
         return this._issuer;
     }
 
-    async issue(
-        args: {
-            credentialSubject: any;
-            expiration: Date;
-            contexts?: string[];
-            evidence?: any;
-            credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
-        },
-        revocationListFileId: string,
-        revocationListIndex: number
-    ) {
-        if (!revocationListFileId) {
-            throw new Error("revocationListFileId param is missing");
-        }
-
-        if (typeof revocationListIndex !== "number" || revocationListIndex < 0) {
-            throw new Error("Invalid revocationListIndex param");
-        }
-
+    async issue(args: {
+        credentialSubject: any;
+        expiration: Date;
+        contexts?: string[];
+        evidence?: any;
+        credentialSchema: { id: string; type: string } | Array<{ id: string; type: string }>;
+    }) {
         try {
-            args["credentialStatus"] = {
-                id: `https://dmv.example.gov/credentials/status/3#${revocationListIndex}`,
-                type: "RevocationList2020Status",
-                revocationListIndex: revocationListIndex,
-                revocationListCredential: `https://example.com/credentials/status/${revocationListFileId.toString()}`,
-            };
-
             const credential = await W3CCredential.create(args, this._issuer);
             return credential;
         } catch (err) {
