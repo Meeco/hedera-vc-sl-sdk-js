@@ -17,29 +17,26 @@ export class HcsRl {
     public static READ_TOPIC_MESSAGES_TIMEOUT = 5000;
 
     /**
-     * TODO: Development code
-     */
-    public static TEST_FILE_KEY = PrivateKey.fromString(
-        "302e020100300506032b6570042204204c657138981d342db74776ffd80cf724eb6a04a8c98a5738f0414472ec104f82"
-    );
-
-    /**
      * Public API
      */
 
-    constructor(protected accountPrivateKey: PrivateKey, protected client: Client) {}
+    constructor(
+        protected accountPrivateKey: PrivateKey,
+        protected client: Client,
+        protected revocationListOwnerPrivateKey: PrivateKey
+    ) {}
 
     async createRevocationListFile() {
         const revocationList = await rl.createList({ length: HcsRl.REVOCATION_LIST_LENGTH });
         const encodedEevocationList = await revocationList.encode();
 
         const transaction = await new FileCreateTransaction()
-            .setKeys([HcsRl.TEST_FILE_KEY.publicKey])
+            .setKeys([this.revocationListOwnerPrivateKey.publicKey])
             .setContents(encodedEevocationList)
             .setMaxTransactionFee(new Hbar(2))
             .freezeWith(this.client);
 
-        const signTx = await transaction.sign(HcsRl.TEST_FILE_KEY);
+        const signTx = await transaction.sign(this.revocationListOwnerPrivateKey);
         const submitTx = await signTx.execute(this.client);
         const receipt = await submitTx.getReceipt(this.client);
 
@@ -55,11 +52,11 @@ export class HcsRl {
     }
 
     async revokeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKE);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.REVOKED);
     }
 
     async issueByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.ISSUE);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.ACTIVE);
     }
 
     async resolveStatusByIndex(revocationListFileId: FileId, revocationListIndex: number): Promise<string> {
@@ -69,7 +66,7 @@ export class HcsRl {
         const firstBit = Number(revocationListDecoded.isRevoked(revocationListIndex)).toString();
         const secondBit = Number(revocationListDecoded.isRevoked(revocationListIndex + 1)).toString();
 
-        return VcStatus[parseInt(firstBit + secondBit, 2)];
+        return VcStatus[parseInt(`${firstBit}${secondBit}`, 2)];
     }
 
     async suspendByIndex(revocationListFileId: FileId, revocationListIndex: number) {
@@ -77,7 +74,7 @@ export class HcsRl {
     }
 
     async resumeByIndex(revocationListFileId: FileId, revocationListIndex: number) {
-        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.RESUME);
+        return this.updateStatus(revocationListFileId, revocationListIndex, VcStatus.RESUMED);
     }
 
     async updateStatus(revocationListFileId: FileId, revocationListIndex: number, status: VcStatus) {
@@ -86,10 +83,9 @@ export class HcsRl {
         // set the bits
         let binary = status.toString(2);
         binary = binary.length == 1 ? `0${binary}` : binary;
-        binary.split("").forEach(
-            (b, index) => revocationListDecoded.setRevoked(revocationListIndex + index, Boolean(parseInt(b)))
-            //console.log(`revocationListDecoded.setRevoked(${revocationListIndex + index}, ${Boolean(parseInt(b))})`)
-        );
+        binary
+            .split("")
+            .forEach((b, index) => revocationListDecoded.setRevoked(revocationListIndex + index, Boolean(parseInt(b))));
 
         const revocationListEncoded = await revocationListDecoded.encode();
 
@@ -99,7 +95,7 @@ export class HcsRl {
             .setMaxTransactionFee(new Hbar(2))
             .freezeWith(this.client);
 
-        const signTx = await transaction.sign(HcsRl.TEST_FILE_KEY);
+        const signTx = await transaction.sign(this.revocationListOwnerPrivateKey);
         const submitTx = await signTx.execute(this.client);
         await submitTx.getReceipt(this.client);
 
