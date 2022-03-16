@@ -9,11 +9,7 @@ async function main() {
     const client = Client.forTestnet();
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-    const hfsVc = new HfsVcSl(
-        PrivateKey.fromString(OPERATOR_KEY), // this is to sign transaction
-        client,
-        PrivateKey.fromString(VC_STATUS_LIST_OWNER_PRIVATE_KEY)
-    );
+    const hfsVc = new HfsVcSl(client, PrivateKey.fromString(VC_STATUS_LIST_OWNER_PRIVATE_KEY));
 
     const revocationListFileId = FileId.fromString(VC_STATUS_LIST_FILE_ID);
 

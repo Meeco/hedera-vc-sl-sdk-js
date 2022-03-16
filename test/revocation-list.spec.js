@@ -12,7 +12,7 @@ describe("HfsVcSl", () => {
         client.setOperator(OPERATOR_ID, OPERATOR_KEY);
         const revocationListOwnerPrivateKey = PrivateKey.generate();
 
-        hfsVcSl = new HfsVcSl(PrivateKey.fromString(OPERATOR_KEY), client, revocationListOwnerPrivateKey);
+        hfsVcSl = new HfsVcSl(client, revocationListOwnerPrivateKey);
         fileId = await hfsVcSl.createRevocationListFile();
     });
 
