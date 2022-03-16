@@ -37,8 +37,7 @@ Sample demo step by step javascript example are available at [Demo Folder](https
 ```json
 {
     "OPERATOR_ID": "0.0...",
-    "OPERATOR_KEY": "302e0201..",
-    "VC_STATUS_LIST_OWNER_PRIVATE_KEY": "302e0201.."
+    "OPERATOR_KEY": "302e0201.."
 }
 ```
 
@@ -49,13 +48,14 @@ npm install
 node demo/1_create_vc_status_list.js 
 ```
 
-After running first step of the demo flow use printed out `VC_STATUS_LIST_FILE_ID` values to complete the <b>`.env.json`</b> configuration file.
+After running first step of the demo flow use printed out `VC_STATUS_LIST_FILE_ID` & `VC_STATUS_LIST_OWNER_PRIVATE_KEY` values to complete the <b>`.env.json`</b> configuration file.
 
 ```json
 {
 ...
 ...
-"VC_STATUS_LIST_FILE_ID": "0.0..."
+"VC_STATUS_LIST_FILE_ID": "0.0...",
+"VC_STATUS_LIST_OWNER_PRIVATE_KEY": "302e0201.."
 }
 ```
 
@@ -92,11 +92,13 @@ npm run build:dev
 
 Run Test
 
-Open jest.setup.js file and update the following environment variables with your `testnet` account details
+Open .env.json file and update the following environment variables with your `testnet` account details
 
-```js
-process.env.OPERATOR_ID = "0.0.xxxxxx";
-process.env.OPERATOR_KEY = "302e02...";
+```json
+{
+    "OPERATOR_ID": "0.0...",
+    "OPERATOR_KEY": "302e0201.."
+}
 ```
 
 ```sh
