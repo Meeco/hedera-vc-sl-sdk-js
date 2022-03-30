@@ -1,15 +1,14 @@
-const { PrivateKey, Client, FileContentsQuery } = require("@hashgraph/sdk");
-const { HfsVcSl, VcSlStatus } = require("../dist");
-const { OPERATOR_ID, OPERATOR_KEY } = require("./.env.json");
+import { PrivateKey, Client, FileContentsQuery } from "@hashgraph/sdk";
+import { HfsVcSl, VcSlStatus } from "../dist";
 
 describe("HfsVcSl", () => {
     let hfsVcSl;
     let client;
     let fileId;
 
-    before(async () => {
+    beforeAll(async () => {
         client = Client.forTestnet();
-        client.setOperator(OPERATOR_ID, OPERATOR_KEY);
+        client.setOperator(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
         const revocationListOwnerPrivateKey = PrivateKey.generate();
 
         hfsVcSl = new HfsVcSl(client, revocationListOwnerPrivateKey);
@@ -21,8 +20,7 @@ describe("HfsVcSl", () => {
             it("creates a file on Hedera file services", async () => {
                 const query = new FileContentsQuery().setFileId(fileId);
                 const encodedStatusList = await query.execute(client);
-                assert.equal(
-                    encodedStatusList.toString(),
+                expect(encodedStatusList.toString()).toEqual(
                     "H4sIAAAAAAAAA-3BMQEAAADCoPVPbQsvoAAAAAAAAAAAAAAAAP4GcwM92tQwAAA"
                 );
             });
@@ -32,25 +30,25 @@ describe("HfsVcSl", () => {
             it("should apply revoke status to revocation list index 0", async () => {
                 const test = await hfsVcSl.revokeByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatus[status], VcSlStatus.REVOKED);
+                expect(VcSlStatus[status]).toEqual(VcSlStatus.REVOKED);
             });
 
             it("should apply suspend status to revocation list index 0", async () => {
                 await hfsVcSl.suspendByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatus[status], VcSlStatus.SUSPENDED);
+                expect(VcSlStatus[status]).toEqual(VcSlStatus.SUSPENDED);
             });
 
             it("should apply resume status to revocation list index 0", async () => {
                 await hfsVcSl.resumeByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatus[status], VcSlStatus.RESUMED);
+                expect(VcSlStatus[status]).toEqual(VcSlStatus.RESUMED);
             });
 
             it("should apply issue status to revocation list index 0", async () => {
                 await hfsVcSl.issueByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
-                assert.equal(VcSlStatus[status], VcSlStatus.ACTIVE);
+                expect(VcSlStatus[status]).toEqual(VcSlStatus.ACTIVE);
             });
         });
     });

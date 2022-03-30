@@ -92,13 +92,11 @@ npm run build:dev
 
 Run Test
 
-Open .env.json file and update the following environment variables with your `testnet` account details
+Open `jest.setup.js` file and update the following environment variables with your `testnet` account details
 
-```json
-{
-    "OPERATOR_ID": "0.0...",
-    "OPERATOR_KEY": "302e0201.."
-}
+```javascript
+process.env.OPERATOR_ID = "0.0...";
+process.env.OPERATOR_KEY = "302e0201..";
 ```
 
 ```sh
