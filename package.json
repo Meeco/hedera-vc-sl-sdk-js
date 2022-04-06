@@ -43,7 +43,7 @@
     },
     "dependencies": {
         "@hashgraph/did-sdk-js": "github:Meeco/did-sdk-js#ff914da5377fc69d8d9d292232a1aba04f1ba74c",
-        "@hashgraph/sdk": "^2.8",
+        "@hashgraph/sdk": "2.11.3",
         "bs58": "^5.0.0",
         "did-jwt": "^5.12.4",
         "did-jwt-vc": "^2.1.9",
