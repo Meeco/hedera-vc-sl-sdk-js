@@ -11,7 +11,7 @@ import * as rl from "vc-revocation-list";
 import { VcSlStatus } from "./vc-sl-status";
 
 export class HfsVcSl {
-    public static VC_STATUS_LIST_LENGTH = 100000;
+    public static VC_STATUS_LIST_LENGTH = 100032;
 
     public static TRANSACTION_FEE = new Hbar(2);
 
