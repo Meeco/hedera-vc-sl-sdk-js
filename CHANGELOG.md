@@ -7,120 +7,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # v1.0.0
-
-## Removed
-
-* Generation of decentralized identifiers and creation of DID documents based on old [Hedera DID Method][did-method-spec]
-* Creation of `identity networks` within `appnets`.
-* Address book - a file on `Hedera File Service` that provides information about HCS topics and `appnet servers`.
-* Creation and initialization of the `VC topic` - an HCS topic playing a role of verifiable credentials registry.
-* Creation (publishing), update, deletion and resolution of DID documents in `appnet identity networks`.
-* Issuance, revocation and status verification of `Verifiable Credentials`.
-
 ## Added
 
-* Generation of decentralized identifiers and creation of DID documents based on new [Hedera DID Method][did-method-spec]
- Creation and initialization of the DID registration on `HCS Private Topic`
-* Create, update, revoke, deletion, and resolution of DID documents based on [DID Document Core Properties][did-core-prop] `event/log messages` recorded on `HCS Topic`
-* Transferring ownership of DID identifier and DID Document to another party.
-* Publishing **DID Events Messages** to resolve and validate **DID Document**
+[status-list-spec]: https://w3c-ccg.github.io/vc-status-list-2021/
+[hedera-services]: https://hedera.com/services
 
-[did-core-prop]: https://w3c.github.io/did-core/#core-properties
-[did-method-spec]: https://github.com/hashgraph/did-method
+Initial implementation of [verifiable credential status list][status-list-spec] for [Hedera services][hedera-services].
 
-### DID API's
+### Status List API's
 
-* Generate & Register
+* Create status list file
 
     ```js
     ...
-    const registeredDid = await did.register();
+    const fileId = await hfsvcsl.createStatusListFile();
     ```
 
-* Resolve
+* Load status list
 
     ```js
     ...
-    const didDoc = await registeredDid.resolve();
+    const statusList = await hfsvcsl.loadStatusList(fileId);
     ```
 
-* Change Ownership
+* Resolve verifiable credential status by index
 
     ```js
     ...
-    await registeredDid.changeOwner({
-    controller: newOwnerIdentifier,
-    newPrivateKey: newOwnerDidPrivateKey,
-    });
+    const status = await hfsvcsl.resolveStatusByIndex(fileId, index);
     ```
 
-* Create, Update and Revoke [DID Document Core Properties][did-core-prop]
-  * Service
+* Update credential status by index
 
     ```js
     ...
-    await registeredDid.addService({
-        id: serviceIdentifier + "#service-1",
-        type: "LinkedDomains",
-        serviceEndpoint: "https://example.com/vcs",
-    });
+    // set status to revoked
+    const updatedStatusList = await hfsvcsl.revokeByIndex(fileId, index)
     ...
-    await registeredDid.updateService({
-        id: serviceIdentifier + "#service-1",
-        type: "LinkedDomains",
-        serviceEndpoint: "https://test.com/did",
-    });
+    // set status to active
+    const updatedStatusList = await hfsvcsl.issueByIndex(fileId, index)
     ...
-    await registeredDid.revokeService({
-        id: serviceIdentifier + "#service-1",
-    });
-    ```
-
-* Verification Method
-
-    ```js
+    // set status to suspended
+    const updatedStatusList = await hfsvcsl.suspendByIndex(fileId, index)
     ...
-    await registeredDid.addVerificationMethod({
-        id: verificationMethodIdentifier + "#key-1",
-        type: "Ed25519VerificationKey2018",
-        controller: registeredDid.getIdentifier(),
-        publicKey: verificationMethodPublicKey,
-    });
-    ...
-    await registeredDid.updateVerificationMethod({
-        id: verificationMethodIdentifier + "#key-1",
-        type: "Ed25519VerificationKey2018",
-        controller: registeredDid.getIdentifier(),
-        publicKey: updatedVerificationMethodPublicKey,
-    });
-    ...
-    await registeredDid.revokeVerificationMethod({
-        id: verificationMethodIdentifier + "#key-1",
-    });
-    ```
-
-* Verification Relationship
-
-    ```js
-    ...
-    await registeredDid.addVerificationRelationship({
-        id: verificationRelationshipIdentifier + "#key-1",
-        relationshipType: verificationRelationshipType,
-        type: "Ed25519VerificationKey2018",
-        controller: registeredDid.getIdentifier(),
-        publicKey: verificationRelationshipPublicKey,
-    });
-    ...
-    await registeredDid.updateVerificationRelationship({
-        id: verificationRelationshipIdentifier + "#key-1",
-        relationshipType: verificationRelationshipType,
-        type: "Ed25519VerificationKey2018",
-        controller: registeredDid.getIdentifier(),
-        publicKey: updatedVerificationRelationshipPublicKey,
-    });
-    ...
-    await registeredDid.revokeVerificationRelationship({
-        id: verificationRelationshipIdentifier + "#key-1",
-        relationshipType: verificationRelationshipType,
-    });
+    // set status to resumed
+    const updatedStatusList = await hfsvcsl.resumeByIndex(fileId, index)
     ```

@@ -11,9 +11,9 @@ async function main() {
 
     const hfsVc = new HfsVcSl(client, PrivateKey.fromString(VC_STATUS_LIST_OWNER_PRIVATE_KEY));
 
-    const revocationListFileId = FileId.fromString(VC_STATUS_LIST_FILE_ID);
+    const statusListFileId = FileId.fromString(VC_STATUS_LIST_FILE_ID);
 
-    await hfsVc.issueByIndex(revocationListFileId, 0);
+    await hfsVc.issueByIndex(statusListFileId, 0);
 
     console.log("ACTIVE");
 }
