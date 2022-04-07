@@ -1,3 +1,2 @@
-process.env.OPERATOR_ID = "0.0.552715";
-process.env.OPERATOR_KEY =
-    "302e020100300506032b657004220420d4b770b8dabfb9545920ddcc6882ed986dfcc7e20098c9c7a1868df06e1fae52";
+process.env.OPERATOR_ID = "0.0.55..";
+process.env.OPERATOR_KEY = "302e02010..";
