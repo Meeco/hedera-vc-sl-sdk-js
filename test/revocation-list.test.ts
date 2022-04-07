@@ -22,7 +22,7 @@ describe("HfsVcSl", () => {
                 const query = new FileContentsQuery().setFileId(fileId);
                 const encodedStatusList = await query.execute(client);
                 expect(encodedStatusList.toString()).toEqual(
-                    "H4sIAAAAAAAAA-3BMQEAAADCoPVPbQsvoAAAAAAAAAAAAAAAAP4GcwM92tQwAAA"
+                    "H4sIAAAAAAAAA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAD4GQx1mVtgwAAA"
                 );
             });
         });
@@ -50,6 +50,14 @@ describe("HfsVcSl", () => {
                 await hfsVcSl.issueByIndex(fileId, 0);
                 const status = await hfsVcSl.resolveStatusByIndex(fileId, 0);
                 expect(VcSlStatus[status]).toEqual(VcSlStatus.ACTIVE);
+            });
+
+            it("should throw an error when index is not multiple of 2 or 0", async () => {
+                const errorMsg = "vcStatusListIndex must be Multiples of 2 OR 0. e.g. 0, 2, 4, 6, 8, 10, 12, 14";
+                await expect(hfsVcSl.revokeByIndex(fileId, 5)).rejects.toThrow(errorMsg);
+                await expect(hfsVcSl.issueByIndex(fileId, 5)).rejects.toThrow(errorMsg);
+                await expect(hfsVcSl.suspendByIndex(fileId, 5)).rejects.toThrow(errorMsg);
+                await expect(hfsVcSl.resumeByIndex(fileId, 5)).rejects.toThrow(errorMsg);
             });
         });
     });

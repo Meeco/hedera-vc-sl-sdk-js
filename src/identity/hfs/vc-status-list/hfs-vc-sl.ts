@@ -73,6 +73,10 @@ export class HfsVcSl {
     }
 
     async updateStatus(vcStatusListFileId: FileId, vcStatusListIndex: number, status: VcSlStatus) {
+        if (vcStatusListIndex % 2 !== 0) {
+            throw new Error("vcStatusListIndex must be Multiples of 2 OR 0. e.g. 0, 2, 4, 6, 8, 10, 12, 14");
+        }
+
         const vcStatusListDecoded = await this.loadRevocationList(vcStatusListFileId);
 
         // set the bits
