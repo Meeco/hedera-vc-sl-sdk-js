@@ -1,0 +1,18 @@
+sequenceDiagram
+Title: Create status list file
+  autonumber
+  participant App as Application
+  participant SDK as VC SL SDK
+  participant HSDK as Hashgraph SDK
+  participant HFS as Hedera File Service
+
+alt Create status list file
+
+App ->> SDK: Send create status list file request
+SDK ->> SDK: Generate empty status list with all bits set to 0
+SDK ->> HSDK: Build FileCreateTransaction
+HSDK ->> HFS: Execute FileCreateTransaction
+HFS ->> SDK: Ack
+SDK ->> App: Return created file ID
+
+end
