@@ -1,0 +1,19 @@
+sequenceDiagram
+Title: Resolve status by index
+  autonumber
+  participant App as Application
+  participant SDK as VC SL SDK
+  participant HSDK as Hashgraph SDK
+  participant HFS as Hedera File Service
+
+alt Resolve status by index
+
+App ->> SDK: Send resolve status by index request
+SDK ->> HSDK: Build FileContentQuery
+HSDK ->> HFS: Execute FileContentQuery
+HFS ->> SDK: Return file content
+SDK ->> SDK: Decode content and build status list instance
+SDK ->> SDK: Locate two bits at the index position and interpret its value
+SDK ->> App: Return status value: ACTIVE | REVOKED | SUSPENDED | RESUMED 
+
+end

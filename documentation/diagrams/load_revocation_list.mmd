@@ -1,0 +1,18 @@
+sequenceDiagram
+Title: Load status list file
+  autonumber
+  participant App as Application
+  participant SDK as VC SL SDK
+  participant HSDK as Hashgraph SDK
+  participant HFS as Hedera File Service
+
+alt Load status list file
+
+App ->> SDK: Send load status list request
+SDK ->> HSDK: Build FileContentQuery
+HSDK ->> HFS: Execute FileContentQuery
+HFS ->> SDK: Return file content
+SDK ->> SDK: Decode content and build status list instance
+SDK ->> App: Return status list instance
+
+end

@@ -1,0 +1,22 @@
+sequenceDiagram
+Title: Update status by index
+  autonumber
+  participant App as Application
+  participant SDK as VC SL SDK
+  participant HSDK as Hashgraph SDK
+  participant HFS as Hedera File Service
+
+alt Update status by index
+
+App ->> SDK: Send update status by index request
+SDK ->> HSDK: Build FileContentQuery
+HSDK ->> HFS: Execute FileContentQuery
+HFS ->> SDK: Return file content
+SDK ->> SDK: Decode content and build status list instance
+SDK ->> SDK: Update two bits at the index position to status representing bit combination
+SDK ->> HSDK: Build FileUpdateTransaction
+HSDK ->> HFS: Execute FileUpdateTransaction
+HFS ->> SDK: Ack
+SDK ->> App: Return updated status list instance
+
+end
