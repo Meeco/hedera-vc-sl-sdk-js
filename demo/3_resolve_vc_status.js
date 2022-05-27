@@ -11,13 +11,13 @@ async function main() {
 
     const hfsVc = new HfsVcSl(client, PrivateKey.fromString(VC_STATUS_LIST_OWNER_PRIVATE_KEY));
 
-    const revocationListFileId = FileId.fromString(VC_STATUS_LIST_FILE_ID);
+    const statusListFileId = FileId.fromString(VC_STATUS_LIST_FILE_ID);
 
     console.log("==== status ====");
-    console.log(await hfsVc.resolveStatusByIndex(revocationListFileId, 0));
+    console.log(await hfsVc.resolveStatusByIndex(statusListFileId, 0));
 
     console.log("==== list ====");
-    console.log(await hfsVc.loadRevocationList(revocationListFileId));
+    console.log(await hfsVc.loadStatusList(statusListFileId));
 }
 
 main();

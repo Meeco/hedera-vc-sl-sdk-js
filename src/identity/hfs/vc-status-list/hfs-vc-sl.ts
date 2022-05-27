@@ -7,11 +7,11 @@ import {
     Hbar,
     PrivateKey,
 } from "@hashgraph/sdk";
-import * as rl from "vc-revocation-list";
+import * as sl from "vc-revocation-list";
 import { VcSlStatus } from "./vc-sl-status";
 
 export class HfsVcSl {
-    public static VC_STATUS_LIST_LENGTH = 100000;
+    public static VC_STATUS_LIST_LENGTH = 100032;
 
     public static TRANSACTION_FEE = new Hbar(2);
 
@@ -21,8 +21,8 @@ export class HfsVcSl {
 
     constructor(protected client: Client, protected vcStatusListOwnerPrivateKey: PrivateKey) {}
 
-    async createRevocationListFile() {
-        const vcStatusList = await rl.createList({ length: HfsVcSl.VC_STATUS_LIST_LENGTH });
+    async createStatusListFile() {
+        const vcStatusList = await sl.createList({ length: HfsVcSl.VC_STATUS_LIST_LENGTH });
         const encodedVcStatusList = await vcStatusList.encode();
 
         const transaction = await new FileCreateTransaction()
@@ -38,10 +38,10 @@ export class HfsVcSl {
         return receipt.fileId;
     }
 
-    async loadRevocationList(vcStatusListFileId: FileId) {
+    async loadStatusList(vcStatusListFileId: FileId) {
         const query = new FileContentsQuery().setFileId(vcStatusListFileId);
         const encodedStatusList = await query.execute(this.client);
-        const decodedStatusList = await rl.decodeList({ encodedList: encodedStatusList.toString() });
+        const decodedStatusList = await sl.decodeList({ encodedList: encodedStatusList.toString() });
 
         return decodedStatusList;
     }
@@ -55,7 +55,7 @@ export class HfsVcSl {
     }
 
     async resolveStatusByIndex(vcStatusListFileId: FileId, vcStatusListIndex: number): Promise<string> {
-        const vcStatusListDecoded = await this.loadRevocationList(vcStatusListFileId);
+        const vcStatusListDecoded = await this.loadStatusList(vcStatusListFileId);
 
         // set the bits
         const firstBit = Number(vcStatusListDecoded.isRevoked(vcStatusListIndex)).toString();
@@ -73,7 +73,11 @@ export class HfsVcSl {
     }
 
     async updateStatus(vcStatusListFileId: FileId, vcStatusListIndex: number, status: VcSlStatus) {
-        const vcStatusListDecoded = await this.loadRevocationList(vcStatusListFileId);
+        if (vcStatusListIndex % 2 !== 0) {
+            throw new Error("vcStatusListIndex must be Multiples of 2 OR 0. e.g. 0, 2, 4, 6, 8, 10, 12, 14");
+        }
+
+        const vcStatusListDecoded = await this.loadStatusList(vcStatusListFileId);
 
         // set the bits
         let binary = status.toString(2);
