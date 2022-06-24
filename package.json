@@ -42,7 +42,7 @@
         "typescript": "^4.3.2"
     },
     "dependencies": {
-        "@hashgraph/sdk": "2.11.3",
+        "@hashgraph/sdk": "~2.15.0",
         "vc-revocation-list": "^3.0.0"
     }
 }
